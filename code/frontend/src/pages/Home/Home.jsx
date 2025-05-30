@@ -1,15 +1,15 @@
 import "./Home.css";
 import MainImage from "../../assets/main_screen_image.png";
 import Navbar from "../../components/Navbar/Navbar";
+import { useNavigate } from "react-router-dom"; 
 
 const Home = () => {
+  const navigate = useNavigate(); 
 
   return (
-    
     <section className="Home">
       <Navbar />
-      
-      {/* <nav className="main-container">
+       {/* <nav className="main-container">
         <button className="home-signin-btn" onClick={() => navigate("/login")}>
           SIGN IN
         </button>
@@ -19,7 +19,12 @@ const Home = () => {
         <div className="home-text-overlay">
           <h1>MY MAGICAL BEDTIME</h1>
           <h3>A new adventure every night!</h3>
-          <button className="home-main-btn">GENERATE A STORY</button>
+          <button
+            className="home-main-btn"
+            onClick={() => navigate("/storyinterface")}
+          >
+            GENERATE A STORY
+          </button>
         </div>
       </div>
     </section>
@@ -27,3 +32,4 @@ const Home = () => {
 };
 
 export default Home;
+
