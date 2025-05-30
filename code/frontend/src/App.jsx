@@ -12,6 +12,7 @@ import SignUp from "./pages/SighUp/SignUp";
 import { useAuthContext } from "./hooks/useAuthContext";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Story from "./pages/Story/Story";
+import StoryCustomizationInterface from "./pages/StoryCustomizationInterface/StoryCustomizationInterface";
 
 function App() {
   const { user } = useAuthContext();
@@ -37,9 +38,8 @@ function App() {
             />
             <Route
               path="/story"
-              element={user ? <Story />: <Navigate to="/login" />}
+              element={user ? <Story /> : <Navigate to="/login" />}
             />
-            
             <Route
               path="/login"
               element={!user ? <SignIn /> : <Navigate to="/dashboard" />}
@@ -48,6 +48,21 @@ function App() {
               path="/signup"
               element={!user ? <SignUp /> : <Navigate to="/dashboard" />}
             />
+            <Route
+              path="/storyinterface"
+              element={
+                user ? (
+                  <StoryCustomizationInterface />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            {/* To test: */}
+            {/* <Route
+              path="/storyinterface"
+              element={<StoryCustomizationInterface />}
+            /> */}
           </Routes>
         </div>
       </BrowserRouter>
