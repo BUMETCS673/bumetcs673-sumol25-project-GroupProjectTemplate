@@ -1,39 +1,73 @@
-import  { useState } from 'react';
-import CharacterCarousel from './CharacterCarousel'; 
-import './StoryCustomizationInterface.css';
+import { useState } from "react";
+import CharacterCarousel from "./CharacterCarousel";
+import "./StoryCustomizationInterface.css";
 
 const themes = [
-  'Friendship', 'Adventure', 'Kindness', 'Animals', 'Magic',
-  'Helping Others', 'Bravery', 'Imagination', 'Bedtime', 'Learning',
-  'Sharing', 'Curiosity', 'Nature', 'Superheroes', 'Creativity'
+  "Friendship",
+  "Adventure",
+  "Kindness",
+  "Animals",
+  "Magic",
+  "Helping Others",
+  "Bravery",
+  "Imagination",
+  "Bedtime",
+  "Learning",
+  "Sharing",
+  "Curiosity",
+  "Nature",
+  "Superheroes",
+  "Creativity",
 ];
 
 const settings = [
-  'Forest', 'Castle', 'Underwater', 'Space', 'Playground',
-  'Farm', 'City', 'Mountain', 'Pirate Ship', 'Home',
-  'Jungle', 'Beach', 'Zoo', 'Treehouse', 'Library'
+  "Forest",
+  "Castle",
+  "Underwater",
+  "Space",
+  "Playground",
+  "Farm",
+  "City",
+  "Mountain",
+  "Pirate Ship",
+  "Home",
+  "Jungle",
+  "Beach",
+  "Zoo",
+  "Treehouse",
+  "Library",
 ];
 
 const StoryCustomizationInterface = () => {
-  const [activeMenu, setActiveMenu] = useState('theme');
+  const [activeMenu, setActiveMenu] = useState("theme");
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [selectedSetting, setSelectedSetting] = useState(null);
 
   const isReady = selectedCharacter && selectedTheme && selectedSetting;
+  const generateStoryHandler = () => {
+    console.log(selectedCharacter, selectedTheme, selectedSetting);
+  };
 
   const renderRightPanel = () => {
-    if (activeMenu === 'character') {
-      return <CharacterCarousel onSelect={setSelectedCharacter} selected={selectedCharacter} />;
+    if (activeMenu === "character") {
+      return (
+        <CharacterCarousel
+          onSelect={setSelectedCharacter}
+          selected={selectedCharacter}
+        />
+      );
     }
 
-    if (activeMenu === 'theme') {
+    if (activeMenu === "theme") {
       return (
         <div className="option-grid">
           {themes.map((theme) => (
             <button
               key={theme}
-              className={`option-button ${selectedTheme === theme ? 'selected' : ''}`}
+              className={`option-button ${
+                selectedTheme === theme ? "selected" : ""
+              }`}
               onClick={() => setSelectedTheme(theme)}
             >
               {theme}
@@ -43,13 +77,15 @@ const StoryCustomizationInterface = () => {
       );
     }
 
-    if (activeMenu === 'setting') {
+    if (activeMenu === "setting") {
       return (
         <div className="option-grid">
           {settings.map((setting) => (
             <button
               key={setting}
-              className={`option-button ${selectedSetting === setting ? 'selected' : ''}`}
+              className={`option-button ${
+                selectedSetting === setting ? "selected" : ""
+              }`}
               onClick={() => setSelectedSetting(setting)}
             >
               {setting}
@@ -70,32 +106,30 @@ const StoryCustomizationInterface = () => {
             <p>Choose your story's: </p>
             <div className="left-buttons">
               <button
-                onClick={() => setActiveMenu('character')}
-                className={activeMenu === 'character' ? 'active' : ''}
+                onClick={() => setActiveMenu("character")}
+                className={activeMenu === "character" ? "active" : ""}
               >
                 CHARACTER
               </button>
               <button
-                onClick={() => setActiveMenu('theme')}
-                className={activeMenu === 'theme' ? 'active' : ''}
+                onClick={() => setActiveMenu("theme")}
+                className={activeMenu === "theme" ? "active" : ""}
               >
                 THEME
               </button>
               <button
-                onClick={() => setActiveMenu('setting')}
-                className={activeMenu === 'setting' ? 'active' : ''}
+                onClick={() => setActiveMenu("setting")}
+                className={activeMenu === "setting" ? "active" : ""}
               >
                 SETTING
               </button>
             </div>
           </div>
 
-          <div className="right-panel">
-            {renderRightPanel()}
-          </div>
+          <div className="right-panel">{renderRightPanel()}</div>
         </div>
 
-        <button className="generate-btn" disabled={!isReady}>
+        <button className="generate-btn" onClick={generateStoryHandler} disabled={!isReady}>
           GENERATE A STORY
         </button>
       </div>

@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
+const storyRoutes = require("./routes/story");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -39,6 +40,7 @@ app.use("/api/", limiter);
 
 // routes
 app.use("/api/user", userRoutes);
+app.use("/api/stories", storyRoutes);
 
 // Logging middleware
 app.use((req, res, next) => {
