@@ -9,8 +9,9 @@ export const useSignUp = () => {
   const signup = async (email, password, firstName, lastName) => {
     setIsLoading(true);
     setError(null);
-
-    const BASE_URL = "http://localhost:5500"
+    
+    const BASE_URL = "http://localhost:5500";
+    // const BASE_URL = "https://mymagicalbedtime-25abceb2c11f.herokuapp.com"
     const response = await fetch(`${BASE_URL}/api/user/signup`, { 
       method: 'POST',
       headers: {'Content-Type': 'application/json'},

@@ -1,9 +1,11 @@
-import React from 'react'
+import Construction from "../../components/Construction/Construction";
 
 const About = () => {
   return (
-    <div>About</div>
-  )
-}
+    <>
+      <Construction pageName="About" />
+    </>
+  );
+};
 
-export default About
+export default About;

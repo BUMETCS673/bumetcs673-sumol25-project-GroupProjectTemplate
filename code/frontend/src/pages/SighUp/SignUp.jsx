@@ -29,10 +29,13 @@ const SignUp = () => {
       <div className="signup-header">
         <h1 className="signup-h1">MY MAGICAL BEDTIME</h1>
       </div>
-
       <div className="signup-right">
+    
         <div className="signup-box">
           <h2>Sign Up</h2>
+           <div className="error">
+            {error && <div className="error-message">{error}</div>}
+          </div>
           <form className="signup-form" onSubmit={signUpHandler}>
             <input
               type="text"

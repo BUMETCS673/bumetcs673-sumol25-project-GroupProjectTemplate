@@ -8,7 +8,7 @@ const Home = () => {
 
   return (
     <section className="Home">
-      <Navbar />
+      {/* <Navbar /> */}
        {/* <nav className="main-container">
         <button className="home-signin-btn" onClick={() => navigate("/login")}>
           SIGN IN
@@ -21,7 +21,7 @@ const Home = () => {
           <h3>A new adventure every night!</h3>
           <button
             className="home-main-btn"
-            onClick={() => navigate("/storyinterface")}
+            onClick={() => navigate("/generatestory")}
           >
             GENERATE A STORY
           </button>
