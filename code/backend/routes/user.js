@@ -15,7 +15,6 @@ router.post('/logout', logoutUser);
 
 // Profile route
 router.get('/profile', (req, res) => {
-  // Handle profile logic here
 }); 
 
 module.exports = router;
