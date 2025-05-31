@@ -77,8 +77,6 @@ const SignIn = () => {
             <FontAwesomeIcon icon={faGoogle} className="icon" />
             Continue with Google
           </button>
-
-      
         </div>
       </div>
 
