@@ -1,9 +1,8 @@
-import React from 'react'
+import React from "react";
+import Construction from "../../components/Construction/Construction";
 
 const Contact = () => {
-  return (
-    <div>Contact</div>
-  )
-}
+  return <Construction pageName="Contact" />;
+};
 
-export default Contact
+export default Contact;

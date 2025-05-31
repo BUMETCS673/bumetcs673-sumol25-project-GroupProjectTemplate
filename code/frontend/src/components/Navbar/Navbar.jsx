@@ -54,11 +54,20 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="/story"
+                    to="/mystory"
                     className="navbar-link"
                     onClick={closeMobileMenu}
                   >
-                    Story
+                    My Story
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/generatestory"
+                    className="navbar-link"
+                    onClick={closeMobileMenu}
+                  >
+                    Story Generator
                   </Link>
                 </li>
                 <li>
@@ -124,9 +133,7 @@ const Navbar = () => {
             className={`navbar-toggle ${isMobileMenuOpen ? "active" : ""}`}
             onClick={toggleMobileMenu}
           >
-            <span></span>
-            <span></span>
-            <span></span>
+        
           </button>
         </div>
       </nav>
