@@ -1,12 +1,10 @@
-import Navbar from "../../components/Navbar/Navbar";
+import Construction from "../../components/Construction/Construction";
 const Dashboard = () => {
   return (
     <>
-    <Navbar />
-
-    <h1>Dashboard</h1>
+      <Construction pageName="Dashboard"/>
     </>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

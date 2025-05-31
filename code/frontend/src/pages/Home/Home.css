@@ -1,4 +1,5 @@
 .Home {
+  padding-top: 5rem;
   font-family: var(--main-font);
   position: relative;
   width: 100%;
@@ -8,12 +9,8 @@
   overflow: hidden;
 }
 
-.Home nav {
-  display: flex;
-  justify-content: flex-end;
-  padding: 24px;
-  position: relative;
-  z-index: 2;
+::-webkit-scrollbar {
+    display: none;
 }
 
 .home-signin-btn {

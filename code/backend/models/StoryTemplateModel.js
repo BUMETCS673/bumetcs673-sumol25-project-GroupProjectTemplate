@@ -10,8 +10,6 @@ const StoryTemplateSchema = new Schema({
   category: {
     type: String,
     required: true,
-    enum: ['adventure', 'friendship', 'educational', 'bedtime', 'seasonal', 'emotions', 'family', 'animals', 'fantasy', 'problem_solving'],
-    default: 'adventure'
   },
   templateContent: {
     type: String,
@@ -28,27 +26,15 @@ const StoryTemplateSchema = new Schema({
       default: 5
     }
   },
-  possibleCharacters: [{
+  possibleCharacters: {
     type: String,
-    enum: [
-      'bunny', 'bear', 'puppy', 'kitten', 'duck',
-      'princess', 'fairy', 'dragon', 'unicorn', 'superhero'
-    ]
-  }],
-  possibleSettings: [{
+  },
+  possibleSettings: {
     type: String,
-    enum: [
-      'forest', 'garden', 'beach', 'castle', 'treehouse',
-      'playground', 'space', 'underwater', 'magical_land', 'bedroom'
-    ]
-  }],
-  possibleThemes: [{
+  },
+  possibleThemes: {
     type: String,
-    enum: [
-      'friendship', 'kindness', 'courage', 'sharing', 'helping',
-      'counting', 'colors', 'animals', 'family', 'trying_new_things'
-    ]
-  }],
+  },
   educationalGoals: [{
     type: String,
     enum: [

@@ -5,51 +5,32 @@ import {
   BrowserRouter,
   Navigate,
 } from "react-router-dom";
-import Home from "./pages/Home/Home";
+
 import "./App.css";
+import { useAuthContext } from "./hooks/useAuthContext";
+
+// Pages
+import Home from "./pages/Home/Home";
+import About from "./pages/About/About";
+import Contact from "./pages/Contact/Contact";
 import SignIn from "./pages/SignIn/SignIn";
 import SignUp from "./pages/SighUp/SignUp";
-import { useAuthContext } from "./hooks/useAuthContext";
 import Dashboard from "./pages/Dashboard/Dashboard";
-import Story from "./pages/Story/Story";
+import MyStory from "./pages/MyStory/MyStory";
 import StoryCustomizationInterface from "./pages/StoryCustomizationInterface/StoryCustomizationInterface";
-
+import Navbar from "./components/Navbar/Navbar";
 function App() {
   const { user } = useAuthContext();
   return (
     <div className="App">
       <BrowserRouter>
         <div className="pages">
+          <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
+
             <Route
-              path="/dashboard"
-              element={user ? <Dashboard /> : <Navigate to="/login" />}
-            />
-            <Route
-              path="/reading"
-              element={
-                user ? <h1>Reading Experience</h1> : <Navigate to="/login" />
-              }
-            />
-            <Route
-              path="/profiles"
-              element={user ? <h1>Profiles</h1> : <Navigate to="/login" />}
-            />
-            <Route
-              path="/story"
-              element={user ? <Story /> : <Navigate to="/login" />}
-            />
-            <Route
-              path="/login"
-              element={!user ? <SignIn /> : <Navigate to="/dashboard" />}
-            />
-            <Route
-              path="/signup"
-              element={!user ? <SignUp /> : <Navigate to="/dashboard" />}
-            />
-            <Route
-              path="/storyinterface"
+              path="/generatestory"
               element={
                 user ? (
                   <StoryCustomizationInterface />
@@ -58,11 +39,33 @@ function App() {
                 )
               }
             />
-            {/* To test: */}
-            {/* <Route
-              path="/storyinterface"
-              element={<StoryCustomizationInterface />}
-            /> */}
+
+             <Route
+              path="/mystory"
+              element={
+                user ? (
+                  <MyStory />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+
+
+            <Route
+              path="/dashboard"
+              element={user ? <Dashboard /> : <Navigate to="/login" />}
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route
+              path="/login"
+              element={!user ? <SignIn /> : <Navigate to="/dashboard" />}
+            />
+            <Route
+              path="/signup"
+              element={!user ? <SignUp /> : <Navigate to="/dashboard" />}
+            />
           </Routes>
         </div>
       </BrowserRouter>
