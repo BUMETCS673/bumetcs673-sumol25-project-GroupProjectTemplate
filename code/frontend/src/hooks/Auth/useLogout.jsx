@@ -5,9 +5,14 @@ export const useLogout = () => {
   const { dispatch } = useAuthContext();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
+
   const logout = async () => {
-    const BASE_URL = "http://localhost:5500";
-    // const BASE_URL = "https://mymagicalbedtime-25abceb2c11f.herokuapp.com"
+    const BASE_URL =
+      window.location.protocol === "file:" ||
+      window.location.hostname === "localhost"
+        ? "http://localhost:5500"
+        : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
+        
     const response = await fetch(`${BASE_URL}/api/user/logout`, {
       method: "GET",
     });
