@@ -4,9 +4,8 @@ const storyGenerationSchema = joi.object({
   character: joi.string().required().min(1).max(50),
   setting: joi.string().required().min(1).max(50),
   theme: joi.string().required().min(1).max(100),
-  ageGroup: joi.string().valid('3-5', '5-8').default('3-5'),
   style: joi.string().valid('watercolor', 'cartoon', 'realistic', 'fantasy').default('watercolor'),
-  parentId: joi.string().optional()
+  childId: joi.string().optional()
 });
 
 const validateStoryInput = (req, res, next) => {
