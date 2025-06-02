@@ -121,3 +121,6 @@ jobs:
           echo "✅ Backend deployment completed successfully!"
           echo "🌐 Backend API URL: https://mymagicalbedtime-25abceb2c11f.herokuapp.com/"
           
+
+          echo "Backend deployment completed successfully!"
+          echo "Backend API URL: https://mymagicalbedtime.herokuapp.com"
