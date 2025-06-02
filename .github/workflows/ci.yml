@@ -19,7 +19,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 21
-          cache: 'npm'
           
       # Cache dependencies for both frontend and backend
       - name: Cache Backend Dependencies
