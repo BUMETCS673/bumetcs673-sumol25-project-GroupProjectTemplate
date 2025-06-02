@@ -58,12 +58,16 @@ jobs:
           fi
 
   deploy-backend:
+  
     name: Deploy Backend to Heroku
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
+      - name: Setup Heroku CLI
+        uses: extractions/setup-heroku@v1
+        
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
