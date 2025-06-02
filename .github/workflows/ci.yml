@@ -4,30 +4,44 @@ on:
   push:
     branches: ["main"]
   pull_request:
+    branches: ["main"]
 
 jobs:
   build-and-test:
     name: Build and Test Frontend & Backend
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: .
-
+    
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+        
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-
+          node-version: 21
+          
+      # Cache dependencies for both frontend and backend
+      - name: Cache Backend Dependencies
+        uses: actions/cache@v3
+        with:
+          path: code/backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('code/backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+            
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v3
+        with:
+          path: code/frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('code/frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-
+            
       # Install and test backend
       - name: Install Backend Dependencies
         working-directory: ./code/backend
         run: npm install
-
+        
       - name: Test Backend
         working-directory: ./code/backend
         run: |
@@ -37,16 +51,16 @@ jobs:
             echo "Backend tests failed"
             exit 1
           fi
-
+          
       # Install, build, and test frontend
       - name: Install Frontend Dependencies
         working-directory: ./code/frontend
         run: npm install
-
+        
       - name: Build Frontend
         working-directory: ./code/frontend
         run: npm run build
-
+        
       - name: Test Frontend
         working-directory: ./code/frontend
         run: |
@@ -57,22 +71,50 @@ jobs:
             exit 1
           fi
 
+  check-backend-changes:
+    name: Check for Backend Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Check for changes in backend
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'code/backend/**'
+
   deploy-backend:
     name: Deploy Backend to Heroku
     runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+    needs: [build-and-test, check-backend-changes]
+    if: |
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push' && 
+      needs.check-backend-changes.outputs.backend-changed == 'true'
+      
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
+          
+      - name: Deploy Backend to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "mymagicalbedtime" 
-          heroku_email: "hong.zhang94@gmail.com" 
-          appdir: "code/backend" # Deploy only the backend directory
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "mymagicalbedtime"
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          appdir: "code/backend"
+          
+      - name: Verify Backend Deployment
+        run: |
+          echo "Backend deployment completed successfully!"
+          echo "Backend API URL: https://mymagicalbedtime.herokuapp.com"
+    

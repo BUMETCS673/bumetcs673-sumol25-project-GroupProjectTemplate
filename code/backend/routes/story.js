@@ -11,7 +11,7 @@ const {
 } = require('../controllers/storyController');
 
 //Apply authentication to all routes
-// router.use(requireAuth);
+router.use(requireAuth);
 
 // Generate complete story with image
 router.post('/generate', validateStoryInput, generateCompleteStory);

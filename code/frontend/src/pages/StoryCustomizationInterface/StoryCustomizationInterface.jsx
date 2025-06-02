@@ -39,13 +39,14 @@ const settings = [
 ];
 
 const StoryCustomizationInterface = () => {
-  const [activeMenu, setActiveMenu] = useState("theme");
+  const [activeMenu, setActiveMenu] = useState("character");
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [selectedSetting, setSelectedSetting] = useState(null);
 
   const isReady = selectedCharacter && selectedTheme && selectedSetting;
   const generateStoryHandler = () => {
+    
     console.log(selectedCharacter, selectedTheme, selectedSetting);
   };
 

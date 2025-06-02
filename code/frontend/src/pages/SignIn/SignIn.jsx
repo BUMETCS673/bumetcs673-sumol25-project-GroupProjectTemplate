@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { useGoogleLogin } from '@react-oauth/google';
-import { useLogin } from "../../hooks/useLogin";
+import { useLogin } from "../../hooks/Auth/useLogin";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
