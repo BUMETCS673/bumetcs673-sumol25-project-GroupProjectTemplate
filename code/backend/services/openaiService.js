@@ -26,42 +26,38 @@ const generateStoryWithOpenAI = async ({
 - Setting: ${setting}
 - Theme/lesson: ${theme}
 
+Please respond in this exact JSON format:
+{
+  "title": "A catchy, child-friendly title",
+  "story": "The complete bedtime story here...",
+  "summary": "A brief 1-2 sentence summary of the story",
+  "imageDescription": "A detailed description of an illustration for this story, suitable for an AI image generator. Include the main Character : ${character}, Setting: ${setting} , Theme/lesson: ${theme}, mood, colors, and style appropriate for children's book illustration."
+}
 Make it approximately 150-300 words, with simple language and a peaceful ending that encourages sleep.`,
         },
       ],
-      max_tokens: 600,
+      max_tokens: 800,
       temperature: 0.7,
     });
-
-    return completion.choices[0].message.content;
+    console.log("OpenAI story generation response:", completion.choices[0].message.content);
+    // Parse the JSON response
+    const parsedResponse = (completion.choices[0].message.content);
+    return parsedResponse;
   } catch (error) {
     console.error("OpenAI story generation error:", error);
     throw new Error(`Story generation failed: ${error.message}`);
   }
 };
 
-// Generate an image using OpenAI's DALL-E model
-const generateImageWithOpenAI = async ({
-  character,
-  setting,
-  theme,
-  style,
-}) => {
+// Generate an image using OpenAI's DALL-E model with the imageDescription
+const generateImageWithOpenAI = async (imageDescription) => {
   try {
-    // Strategy 1: Multiple "no text" reinforcements
-    const prompt1 = `A beautiful children's book illustration in ${style} style showing ${character} in ${setting}, conveying ${theme}. Gentle, dreamy, child-friendly, perfect for bedtime story. Soft colors, peaceful atmosphere. Pure illustration with no text, no words, no letters, no writing whatsoever.`;
-
-    // Strategy 2: Emphasize visual elements instead
-    const prompt2 = `Pure visual ${style} illustration of ${character} in ${setting} expressing ${theme}. Focus on colors, shapes, and visual storytelling only. Children's book art style with soft, dreamy atmosphere. Visual narrative without any text elements, letters, or written words.`;
-
-    // Strategy 3: Specific exclusions
-    const prompt3 = `${style} children's book illustration: ${character} in ${setting} showing ${theme}. Dreamy, gentle, child-friendly scene with soft colors and peaceful mood. Image only - exclude all text, titles, captions, speech bubbles, signs, labels, and written content.`;
-
-    // Strategy 4: Descriptive visual focus
-    const prompt4 = `Wordless ${style} illustration for children showing ${character} peacefully in ${setting}, capturing the essence of ${theme}. Rich visual details, soft lighting, gentle colors. Pure artwork without typography, text overlays, or any written elements.`;
+    // Add emphasis on no text to the existing image description
+    const enhancedPrompt = `${imageDescription} Pure visual illustration only - no text, no words, no letters, no titles, no captions, no speech bubbles, no written elements of any kind.`;
+    
     const result = await openai.images.generate({
       model: "dall-e-3",
-      prompt: prompt1,
+      prompt: enhancedPrompt,
       size: "1024x1024",
       quality: "standard",
       n: 1,
@@ -76,6 +72,7 @@ const generateImageWithOpenAI = async ({
     throw new Error(`Image generation failed: ${error.message}`);
   }
 };
+
 
 module.exports = {
   generateStoryWithOpenAI,

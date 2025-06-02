@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {useAuthContext} from "./useAuthContext";
+import { useAuthContext } from "./useAuthContext";
 
 export const useSignUp = () => {
   const [error, setError] = useState(null);
@@ -9,14 +9,18 @@ export const useSignUp = () => {
   const signup = async (email, password, firstName, lastName) => {
     setIsLoading(true);
     setError(null);
-    
-    const BASE_URL = "http://localhost:5500";
-    // const BASE_URL = "https://mymagicalbedtime-25abceb2c11f.herokuapp.com"
-    const response = await fetch(`${BASE_URL}/api/user/signup`, { 
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({email, password, firstName, lastName})
-    }); 
+
+    const BASE_URL =
+      window.location.protocol === "file:" ||
+      window.location.hostname === "localhost"
+        ? "http://localhost:5500"
+        : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
+
+    const response = await fetch(`${BASE_URL}/api/user/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, firstName, lastName }),
+    });
 
     const json = await response.json();
 
@@ -27,13 +31,13 @@ export const useSignUp = () => {
 
     if (response.ok) {
       // save user to local storage
-      localStorage.setItem('user', JSON.stringify(json));
+      localStorage.setItem("user", JSON.stringify(json));
 
       // update auth context
-      dispatch({type: 'LOGIN', payload: json});
+      dispatch({ type: "LOGIN", payload: json });
 
       setIsLoading(false);
     }
-  }; 
+  };
   return { signup, isLoading, error };
-}
+};

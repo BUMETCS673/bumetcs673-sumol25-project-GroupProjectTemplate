@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import "./Navbar.css";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "../../hooks/useAuthContext";
-import { useLogout } from "../../hooks/useLogout";
+import { useAuthContext } from "../../hooks/Auth/useAuthContext";
+import { useLogout } from "../../hooks/Auth/useLogout";
 import Logo from "../../assets/logo.png";
 
 const Navbar = () => {
@@ -58,7 +58,7 @@ const Navbar = () => {
                     className="navbar-link"
                     onClick={closeMobileMenu}
                   >
-                    My Story
+                    My Stories
                   </Link>
                 </li>
                 <li>
