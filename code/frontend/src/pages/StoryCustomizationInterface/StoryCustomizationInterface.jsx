@@ -41,7 +41,8 @@ const settings = [
 ];
 
 const StoryCustomizationInterface = () => {
-  // UI state for current menu and user selections
+
+  // UI state for current menu and user selection
   const [activeMenu, setActiveMenu] = useState("character");
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState(null);
@@ -53,6 +54,7 @@ const StoryCustomizationInterface = () => {
 
   // Trigger story generation view
   const generateStoryHandler = () => {
+    
     console.log(selectedCharacter, selectedTheme, selectedSetting);
     setStoryGenerated(true);
   };

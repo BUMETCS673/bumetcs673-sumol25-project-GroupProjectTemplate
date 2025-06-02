@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 
 import "./App.css";
-import { useAuthContext } from "./hooks/useAuthContext";
+import { useAuthContext } from "./hooks/Auth/useAuthContext";
 
 // Pages
 import Home from "./pages/Home/Home";

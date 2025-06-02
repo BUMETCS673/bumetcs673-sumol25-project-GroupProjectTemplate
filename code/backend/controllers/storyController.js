@@ -6,9 +6,10 @@ const generateCompleteStory = async (req, res) => {
   const startTime = Date.now();
   let generationRequest;
   console.log(req.validatedData);
+
   try {
     const { character, setting, theme, ageGroup = '3-5', style = 'watercolor', childId } = req.validatedData;
-    const userId = req.parentId; 
+    const userId = req.user._id;
     
     console.log('Generating complete story package for:', { character, setting, theme, ageGroup });
     
@@ -21,11 +22,54 @@ const generateCompleteStory = async (req, res) => {
     });
     await generationRequest.save();
     
-    // Generate story and image in parallel
-    const [storyResult, imageResult] = await Promise.allSettled([
-      generateStoryWithOpenAI({ character, setting, theme, ageGroup }),
-      generateImageWithOpenAI({ character, setting, theme, style })
-    ]);
+    // Generate story first
+    let storyData = null;
+    let imageResult = null;
+    
+    try {
+      // Generate story with imageDescription
+      const storyResponse = await generateStoryWithOpenAI({ character, setting, theme, ageGroup });
+
+      // Debug logging
+      console.log('Story generation raw response:', storyResponse);
+      console.log('Type of storyResponse:', typeof storyResponse);
+      
+      // Parse the response if it's a string
+      if (typeof storyResponse === 'string') {
+        try {
+          storyData = JSON.parse(storyResponse);
+          console.log('Parsed story data:', storyData);
+        } catch (parseError) {
+          console.error('Failed to parse story response:', parseError);
+          throw new Error('Invalid story response format');
+        }
+      } else {
+        storyData = storyResponse;
+      }
+      
+       // Validate that we have the required fields
+      if (!storyData || !storyData.story || !storyData.title || !storyData.imageDescription) {
+        console.error('Missing required fields in story data:', storyData);
+        throw new Error('Incomplete story data received');
+      }
+      
+      // Update generation request for successful story
+      generationRequest.results.storyGenerated = true;
+      
+      // Generate image using the imageDescription from story
+      if (storyData && storyData.imageDescription) {
+        try {
+          imageResult = await generateImageWithOpenAI(storyData.imageDescription);
+          generationRequest.results.imageGenerated = true;
+        } catch (imageError) {
+          console.error('Image generation failed:', imageError);
+          generationRequest.results.imageError = imageError.message || 'Unknown error';
+        }
+      }
+    } catch (storyError) {
+      console.error('Story generation failed:', storyError);
+      generationRequest.results.storyError = storyError.message || 'Unknown error';
+    }
     
     const endTime = Date.now();
     const duration = endTime - startTime;
@@ -39,51 +83,38 @@ const generateCompleteStory = async (req, res) => {
     };
     
     // Process story result
-    let storyContent = null;
-    let wordCount = 0;
+    let savedStory = null;
     
-    if (storyResult.status === 'fulfilled') {
-      storyContent = storyResult.value;
-      wordCount = storyContent.split(' ').length;
-      response.story = storyContent;
+    if (storyData) {
+      const wordCount = storyData.story.split(' ').length;
+      
+      response.title = storyData.title;
+      response.story = storyData.story;
+      response.summary = storyData.summary;
+      response.imageDescription = storyData.imageDescription;
       response.wordCount = wordCount;
       
-      // Update generation request
-      generationRequest.results.storyGenerated = true;
-    } else {
-      response.storyError = 'Failed to generate story';
-      generationRequest.results.storyError = storyResult.reason?.message || 'Unknown error';
-      console.error('Story generation failed:', storyResult.reason);
-    }
-    
-    // Process image result
-    let imageUrl = null;
-    let revisedPrompt = null;
-    
-    if (imageResult.status === 'fulfilled') {
-      imageUrl = imageResult.value.imageUrl;
-      revisedPrompt = imageResult.value.revisedPrompt;
-      response.imageUrl = imageUrl;
-      response.revisedPrompt = revisedPrompt;
+      // Process image result
+      let imageUrl = null;
+      let revisedPrompt = null;
       
-      // Update generation request
-      generationRequest.results.imageGenerated = true;
-    } else {
-      response.imageError = 'Failed to generate image';
-      generationRequest.results.imageError = imageResult.reason?.message || 'Unknown error';
-      console.error('Image generation failed:', imageResult.reason);
-    }
-    
-    // Save story to database if at least story was generated
-    let savedStory = null;
-    if (storyContent) {
-      const storyTitle = `${character}'s ${theme} Adventure`;
+      if (imageResult) {
+        imageUrl = imageResult.imageUrl;
+        revisedPrompt = imageResult.revisedPrompt;
+        response.imageUrl = imageUrl;
+        response.revisedPrompt = revisedPrompt;
+      } else {
+        response.imageError = 'Failed to generate image';
+      }
       
+      // Save story to database
       savedStory = new Story({
         userId,
         childId: childId || null,
-        title: storyTitle,
-        content: storyContent,
+        title: storyData.title,
+        content: storyData.story,
+        summary: storyData.summary,
+        imageDescription: storyData.imageDescription,
         character,
         setting,
         theme,
@@ -92,7 +123,7 @@ const generateCompleteStory = async (req, res) => {
         imageUrl,
         imageStyle: style,
         revisedPrompt,
-        isComplete: !!(storyContent && imageUrl),
+        isComplete: !!(storyData && imageUrl),
         generationTime: duration,
         generatedAt: new Date()
       });
@@ -100,12 +131,15 @@ const generateCompleteStory = async (req, res) => {
       await savedStory.save();
       response.storyId = savedStory._id;
       response.storySlug = savedStory.storyId;
+    } else {
+      response.success = false;
+      response.storyError = 'Failed to generate story';
     }
     
     // Update generation request with final status
     generationRequest.timing.endTime = new Date(endTime);
     generationRequest.timing.duration = duration;
-    generationRequest.status = storyContent ? 'completed' : 'failed';
+    generationRequest.status = storyData ? 'completed' : 'failed';
     await generationRequest.save();
     
     res.json(response);
@@ -131,47 +165,33 @@ const generateCompleteStory = async (req, res) => {
 
 // Get user's stories
 const getUserStories = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { page = 1, limit = 10, childId } = req.query;
-    
-    const query = { userId };
-    if (childId) query.childId = childId;
-    
-    const stories = await Story.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .populate('childId', 'name age');
-    
-    const total = await Story.countDocuments(query);
-    
-    res.json({
-      success: true,
-      stories,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching stories:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch stories'
-    });
-  }
+ try {
+   const userId = req.user._id;
+   
+   const stories = await Story.find({ userId: userId })
+     .sort({ createdAt: -1 });
+   
+   res.json({
+     success: true,
+     stories,
+     total: stories.length
+   });
+ } catch (error) {
+   console.error('Error fetching stories:', error);
+   res.status(500).json({
+     success: false,
+     error: 'Failed to fetch stories'
+   });
+ }
 };
 
 // Get specific story
 const getStory = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
     
-    const story = await Story.findOne({ _id: id, userId })
-      .populate('childId', 'name age');
+    const story = await Story.findOne({ _id: id, userId });
     
     if (!story) {
       return res.status(404).json({
