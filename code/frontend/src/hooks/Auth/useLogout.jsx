@@ -14,7 +14,7 @@ export const useLogout = () => {
         : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
         
     const response = await fetch(`${BASE_URL}/api/user/logout`, {
-      method: "GET",
+      method: "POST",
     });
 
     const json = await response.json();
