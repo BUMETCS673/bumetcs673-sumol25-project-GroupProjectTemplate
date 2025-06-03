@@ -278,11 +278,112 @@ const deleteStory = async (req, res) => {
   }
 };
 
+/**
+ * Validates story parameters
+ * @param {Object} params - Story generation parameters
+ * @param {string} params.character - Main character for the story
+ * @param {string} params.setting - Story setting/location
+ * @param {string} params.theme - Story theme
+ * @param {string} params.ageGroup - Target age group (3-5, 6-8, 9-12)
+ * @returns {Object} Validation result with isValid boolean and errors array
+ */
+function validateStoryParameters(params) {
+  const errors = [];
+  const validAgeGroups = ['3-5', '6-8', '9-12'];
+
+  // Check required fields
+  if (!params.character || params.character.trim() === '') {
+    errors.push('Character is required');
+  }
+
+  if (!params.setting || params.setting.trim() === '') {
+    errors.push('Setting is required');
+  }
+
+  if (!params.theme || params.theme.trim() === '') {
+    errors.push('Theme is required');
+  }
+
+  // Validate age group
+  if (!validAgeGroups.includes(params.ageGroup)) {
+    errors.push('Invalid age group. Must be one of: 3-5, 6-8, 9-12');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ * Generates story data using OpenAI service
+ * @param {Object} params - Story generation parameters
+ * @param {string} params.character - Main character for the story
+ * @param {string} params.setting - Story setting/location
+ * @param {string} params.theme - Story theme
+ * @param {string} params.ageGroup - Target age group
+ * @returns {Promise<Object>} Generated story data
+ * @throws {Error} When validation fails or story generation fails
+ */
+async function generateStoryData(params) {
+  try {
+    // First validate the parameters
+    const validation = validateStoryParameters(params);
+    
+    if (!validation.isValid) {
+      throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    // Call OpenAI service to generate the story
+    const storyResponse = await generateStoryWithOpenAI(params);
+    
+    // Parse the response
+    let storyData;
+    try {
+      storyData = JSON.parse(storyResponse);
+    } catch (parseError) {
+      throw new Error('Invalid response format from story generation service');
+    }
+
+    // Validate that all required fields are present and not empty
+    const requiredFields = ['title', 'story', 'summary', 'imageDescription'];
+    const missingFields = requiredFields.filter(field => !storyData[field] || storyData[field].trim() === '');
+    
+    if (missingFields.length > 0) {
+      throw new Error('Incomplete story data received');
+    }
+
+    return storyData;
+
+  } catch (error) {
+    // Re-throw validation errors as-is
+    if (error.message.startsWith('Validation failed:')) {
+      throw error;
+    }
+    
+    // Re-throw incomplete data errors as-is
+    if (error.message === 'Incomplete story data received') {
+      throw error;
+    }
+    
+    // Re-throw invalid response format errors as-is
+    if (error.message === 'Invalid response format from story generation service') {
+      throw error;
+    }
+    
+    // Wrap other errors with context
+    throw new Error(`Story generation failed: ${error.message}`);
+  }
+}
+
 module.exports = {
   generateCompleteStory,
   getUserStories,
   getStory,
   saveStory,
-  deleteStory
+  deleteStory,
+  // Export for testing
+  generateStoryData,
+  validateStoryParameters
 };
 
