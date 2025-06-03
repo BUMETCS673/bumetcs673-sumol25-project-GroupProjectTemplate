@@ -60,14 +60,14 @@ app.get("/health", (req, res) => {
 // connect to mongodb
 mongoose
   .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
   })
   .then(() => {
     app.listen(port, () => {
       console.log(`🌙 Bedtime Story Server running on port ${port}`);
       console.log(`📚 Health check: http://localhost:${port}/health`);
-      console.log(`🎨 API base URL: http://localhost:${port}/api`);
+      // console.log(`🎨 API base URL: http://localhost:${port}/api`);
     });
 
     console.log("Connected to MongoDB");
@@ -93,3 +93,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
 });
+
+module.exports = app;
+

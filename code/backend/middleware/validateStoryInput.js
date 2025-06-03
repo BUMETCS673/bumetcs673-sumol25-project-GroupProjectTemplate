@@ -23,4 +23,7 @@ const validateStoryInput = (req, res, next) => {
   next();
 };
 
-module.exports = { validateStoryInput };
+module.exports = { 
+  validateStoryInput
+};
+
