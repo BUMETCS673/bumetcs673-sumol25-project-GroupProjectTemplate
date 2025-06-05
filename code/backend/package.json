@@ -5,8 +5,11 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "nodemon server.js",
-    "test": "jest --ci --coverage",
-    "test:dev": "jest --watchAll --detectOpenHandles"
+    "test": "NODE_ENV=test jest --testPathPattern=controllers",
+    "test:controller": "NODE_ENV=test jest __tests__/controllers/storyController.test.js",
+    "test:validation": "NODE_ENV=test jest __tests__/controllers/storyValidation.test.js",
+    "test:all": "NODE_ENV=test jest",
+    "test:coverage": "NODE_ENV=test jest --coverage --testPathPattern=controllers"
   },
   "keywords": [],
   "author": "",
