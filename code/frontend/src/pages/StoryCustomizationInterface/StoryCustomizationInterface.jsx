@@ -36,7 +36,7 @@ const settings = [
   "Jungle",
   "Beach",
   "Zoo",
-  "Treehouse",
+  "Tree house",
   "Library",
 ];
 
