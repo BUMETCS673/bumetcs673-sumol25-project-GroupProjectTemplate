@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Book, Play, Calendar, User, MapPin, Sparkles, Search, Filter, Trash2, Eye } from 'lucide-react';
 import './MyStory.css';
@@ -263,3 +264,16 @@ Modified by:  Hongjie Zhang
 Modifications: Fix nav link, add margin to the header, add loading state,
 add empty state when no stories are available,
 Verified:  Reviewed, partially edited*/
+=======
+import Construction from "../../components/Construction/Construction"
+
+const MyStory = () => {
+  return (
+    <>
+      <Construction pageName="My Stories"/>
+    </>
+  )
+}
+
+export default MyStory
+>>>>>>> origin/main

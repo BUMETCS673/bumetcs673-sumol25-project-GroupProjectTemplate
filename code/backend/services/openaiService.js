@@ -73,6 +73,7 @@ const generateImageWithOpenAI = async (imageDescription) => {
   }
 };
 
+<<<<<<< HEAD
 // Generate audio using OpenAI's TTS model
 const generateAudioWithOpenAI = async ({
   text,
@@ -123,9 +124,14 @@ const getContentType = (format) => {
   };
   return contentTypes[format] || "audio/mpeg";
 };
+=======
+>>>>>>> origin/main
 
 module.exports = {
   generateStoryWithOpenAI,
   generateImageWithOpenAI,
+<<<<<<< HEAD
   generateAudioWithOpenAI,
+=======
+>>>>>>> origin/main
 };
