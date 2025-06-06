@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+<<<<<<< HEAD
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.development
+.env.test
+
+=======
+>>>>>>> origin/main
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -26,4 +38,8 @@ dist-ssr
 # git
 .git
 .github
+<<<<<<< HEAD
+.gitignore.env
+=======
 .gitignore
+>>>>>>> origin/main

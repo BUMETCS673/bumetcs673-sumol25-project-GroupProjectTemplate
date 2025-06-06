@@ -20,21 +20,78 @@ const GenerationRequestSchema = new Schema({
     setting: String,
     theme: String,
     ageGroup: String,
+<<<<<<< HEAD
+    style: String,
+    // Audio parameters
+    voice: {
+      type: String,
+      enum: ['alloy', 'echo', 'fable', 'nova', 'onyx', 'shimmer'],
+      default: 'nova'
+    },
+    audioModel: {
+      type: String,
+      enum: ['tts-1', 'tts-1-hd'],
+      default: 'tts-1'
+    },
+    audioFormat: {
+      type: String,
+      enum: ['mp3', 'opus', 'aac', 'flac', 'wav'],
+      default: 'mp3'
+    }
+=======
     style: String
+>>>>>>> origin/main
   },
   
   // Generation results
   results: {
     storyGenerated: { type: Boolean, default: false },
     imageGenerated: { type: Boolean, default: false },
+<<<<<<< HEAD
+    audioGenerated: { type: Boolean, default: false },
+    
+    // File upload results
+    imageUploaded: { type: Boolean, default: false },
+    audioUploaded: { type: Boolean, default: false },
+    
+    // Error tracking
+    storyError: String,
+    imageError: String,
+    audioError: String,
+    imageUploadError: String,
+    audioUploadError: String,
+    
+    // Generated content metadata
+    wordCount: Number,
+    estimatedAudioDuration: Number, // in seconds
+    
+    // File URLs (Firebase Storage)
+    imageUrl: String,
+    audioUrl: String,
+    
+    // OpenAI metadata
+    openaiImageUrl: String, // Original OpenAI image URL
+    revisedPrompt: String
+=======
     storyError: String,
     imageError: String
+>>>>>>> origin/main
   },
   
   // Performance tracking
   timing: {
     startTime: Date,
     endTime: Date,
+<<<<<<< HEAD
+    duration: Number, // Total duration in milliseconds
+  },
+    
+  status: {
+    type: String,
+    enum: ['pending', 'processing', 'completed', 'partial', 'failed'],
+    default: 'pending'
+  },
+=======
     duration: Number
   },
   
@@ -43,6 +100,7 @@ const GenerationRequestSchema = new Schema({
     enum: ['pending', 'processing', 'completed', 'failed'],
     default: 'pending'
   }
+>>>>>>> origin/main
 }, {
   timestamps: true
 });

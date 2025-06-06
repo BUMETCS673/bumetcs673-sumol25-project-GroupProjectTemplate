@@ -7,10 +7,25 @@ export const StoryReducer = (state, action) => {
     case "GENERATE_STORY":
       return {
         ...state,
+<<<<<<< HEAD
+        generatedStory: [action.payload, ...state.stories],
+=======
+>>>>>>> origin/main
         stories: [action.payload, ...state.stories],
         loading: false,
         error: null,
       };
+<<<<<<< HEAD
+
+    case "GET_STORY":
+      return {
+        ...state,
+        currentStory: action.payload,
+        loading: false,
+        error: null,
+      }
+=======
+>>>>>>> origin/main
     case "GET_STORIES":
       return {
         ...state,
@@ -41,6 +56,8 @@ export const StoryReducer = (state, action) => {
             : state.currentStory,
       };
 
+<<<<<<< HEAD
+=======
     case "INCREMENT_READ_COUNT":
       return {
         ...state,
@@ -72,6 +89,7 @@ export const StoryReducer = (state, action) => {
         filters: { ...state.filters, ...action.payload },
       };
 
+>>>>>>> origin/main
     default:
       return state;
   }
@@ -79,6 +97,11 @@ export const StoryReducer = (state, action) => {
 
 export const StoryContextProvider = ({ children }) => {
   const initialState = {
+<<<<<<< HEAD
+    generatedStory: null,
+    stories: [],
+    currentStory: null,
+=======
     stories: [],
     currentStory: null,
     generationParams: {
@@ -101,19 +124,25 @@ export const StoryContextProvider = ({ children }) => {
       totalReads: 0,
       themes: [],
     },
+>>>>>>> origin/main
     loading: false,
     error: null,
   };
 
   const [state, dispatch] = useReducer(StoryReducer, initialState);
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> origin/main
   return (
     <StoryContext.Provider value={{ ...state, dispatch }}>
       {children}
     </StoryContext.Provider>
   );
 };
+<<<<<<< HEAD
+=======
 
 
 // ============================================
@@ -183,3 +212,4 @@ const StoryComponent = () => {
   );
 };
 */
+>>>>>>> origin/main

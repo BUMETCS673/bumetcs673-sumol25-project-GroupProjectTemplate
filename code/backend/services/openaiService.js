@@ -73,8 +73,65 @@ const generateImageWithOpenAI = async (imageDescription) => {
   }
 };
 
+<<<<<<< HEAD
+// Generate audio using OpenAI's TTS model
+const generateAudioWithOpenAI = async ({
+  text,
+  voice,
+  model,
+  responseFormat,
+  speed
+}) => {
+  try {
+  
+    console.log(`Generating audio with voice: ${voice}, model: ${model}, format: ${responseFormat}`);
+
+    const response = await openai.audio.speech.create({
+      model: model,
+      voice: voice,
+      input: text,
+      response_format: responseFormat,
+      speed: speed,
+    });
+
+    // Get the audio as a buffer
+    const buffer = Buffer.from(await response.arrayBuffer());
+    
+    return {
+      audioBuffer: buffer,
+      contentType: getContentType(responseFormat),
+      voice: voice,
+      model: model,
+      format: responseFormat,
+      textLength: text.length,
+      estimatedDuration: Math.ceil(text.split(' ').length / 150) * 60, // Rough estimate in seconds
+    };
+
+  } catch (error) {
+    console.error("OpenAI audio generation error:", error);
+    throw new Error(`Audio generation failed: ${error.message}`);
+  }
+};
+
+// Helper function to get content type based on format
+const getContentType = (format) => {
+  const contentTypes = {
+    mp3: "audio/mpeg",
+    opus: "audio/opus",
+    aac: "audio/aac",
+    flac: "audio/flac",
+    wav: "audio/wav"
+  };
+  return contentTypes[format] || "audio/mpeg";
+};
+=======
+>>>>>>> origin/main
 
 module.exports = {
   generateStoryWithOpenAI,
   generateImageWithOpenAI,
+<<<<<<< HEAD
+  generateAudioWithOpenAI,
+=======
+>>>>>>> origin/main
 };
