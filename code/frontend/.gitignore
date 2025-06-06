@@ -35,8 +35,4 @@ dist-ssr
 # git
 .git
 .github
-<<<<<<< HEAD
-.gitignore.env
-=======
 .gitignore
->>>>>>> origin/main
