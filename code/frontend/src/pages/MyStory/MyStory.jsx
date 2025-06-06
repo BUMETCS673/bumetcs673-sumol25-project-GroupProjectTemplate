@@ -15,8 +15,6 @@ const StoryListPage = ({
   const [filteredStories, setFilteredStories] = useState([]);
   const navigate = useNavigate();
 
-  
-
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown date';
     const date = new Date(dateString);
