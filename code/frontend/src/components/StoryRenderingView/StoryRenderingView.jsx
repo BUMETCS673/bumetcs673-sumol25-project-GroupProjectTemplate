@@ -16,7 +16,7 @@ const StoryRenderingView = ({ onBackToSettings, generateStory }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [audioError, setAudioError] = useState(null);
 
-  console.log("Current Story:", generateStory);
+
 
   // Audio refs
   const audioRef = useRef(null);
@@ -26,7 +26,7 @@ const StoryRenderingView = ({ onBackToSettings, generateStory }) => {
     const story = generateStory;
     setStoryData(story);
     setLoading(false);
-
+    console.log("Current Story:", generateStory);
     // Prepare words for highlighting from content
     if (story.content) {
       const cleanStory = story.content
@@ -218,12 +218,12 @@ const StoryRenderingView = ({ onBackToSettings, generateStory }) => {
   if (!storyData) {
     return (
       <div className="story-error">
-        Oops! Failed to load story. Please try again.
+        Loading your magical story...
       </div>
     );
   }
 
-  const { metadata, content, imageDownloadUrl, title } = storyData;
+  const { metadata, content, imageUrl, title } = storyData;
 
   return (
     <div className="rendered-story-container">
@@ -235,7 +235,7 @@ const StoryRenderingView = ({ onBackToSettings, generateStory }) => {
       </div>
 
       <div className="story-illustration">
-        <img src={imageDownloadUrl} alt="Story Illustration" />
+        <img src={imageUrl} alt="Story Illustration" />
       </div>
 
       {/* OpenAI TTS Controls */}
