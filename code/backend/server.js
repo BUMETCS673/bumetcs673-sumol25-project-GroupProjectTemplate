@@ -21,10 +21,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-<<<<<<< HEAD
       "http://localhost:5174",
-=======
->>>>>>> origin/main
       "https://velvety-entremet-8ac832.netlify.app",
     ],
     credentials: true,
