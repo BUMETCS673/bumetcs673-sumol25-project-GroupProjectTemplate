@@ -7,7 +7,7 @@ export const StoryReducer = (state, action) => {
     case "GENERATE_STORY":
       return {
         ...state,
-        generatedStory: [action.payload, ...state.stories],
+        generatedStory: action.payload,
         stories: [action.payload, ...state.stories],
         loading: false,
         error: null,
@@ -18,19 +18,11 @@ export const StoryReducer = (state, action) => {
         currentStory: action.payload,
         loading: false,
         error: null,
-      }
+      };
     case "GET_STORIES":
       return {
         ...state,
         stories: action.payload,
-        loading: false,
-        error: null,
-      };
-
-    case "DELETE_STORY":
-      return {
-        ...state,
-        stories: state.stories.filter((story) => story._id !== action.payload),
         loading: false,
         error: null,
       };
@@ -66,12 +58,6 @@ export const StoryReducer = (state, action) => {
             : state.currentStory,
       };
 
-    case "SET_FILTERS":
-      return {
-        ...state,
-        filters: { ...state.filters, ...action.payload },
-      };
-
     default:
       return state;
   }
@@ -79,7 +65,6 @@ export const StoryReducer = (state, action) => {
 
 export const StoryContextProvider = ({ children }) => {
   const initialState = {
-
     generatedStory: null,
     stories: [],
     currentStory: null,

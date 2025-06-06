@@ -17,7 +17,7 @@ import SignIn from "./pages/Auth/SignIn/SignIn";
 import SignUp from "./pages/Auth/SighUp/SignUp";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import MyStory from "./pages/MyStory/MyStory";
-import StoryCustomizationInterface from "./pages/GenerateStory/StoryCustomizationInterface";
+import GenerateStory from "./pages/GenerateStory/GenerateStory";
 import Navbar from "./components/Navbar/Navbar";
 function App() {
   const { user } = useAuthContext();
@@ -33,7 +33,7 @@ function App() {
               path="/generatestory"
               element={
                 user ? (
-                  <StoryCustomizationInterface />
+                  <GenerateStory />
                 ) : (
                   <Navigate to="/login" />
                 )
