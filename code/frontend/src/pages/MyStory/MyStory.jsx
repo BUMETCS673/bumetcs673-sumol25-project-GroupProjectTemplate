@@ -251,7 +251,7 @@ export default StoryListPage;
 /** @ai-generated 
 Basic structure of the component was AI generated
 Tool: Claude (Anthropic)
-Link: https://claude.ai/chat/331b55c1-b4f5-4ee3-bde5-b11d46bdb2ec
+Link: https://claude.ai/chat/3ec44bc7-3ce2-4e0f-9600-f909671b1292
 Prompt: "Create a React component for displaying a list of user stories 
 with search, filter, and sort functionality. 
 The component should include a header with the number of stories, 
@@ -264,16 +264,4 @@ Modified by:  Hongjie Zhang
 Modifications: Fix nav link, add margin to the header, add loading state,
 add empty state when no stories are available,
 Verified:  Reviewed, partially edited*/
-=======
-import Construction from "../../components/Construction/Construction"
 
-const MyStory = () => {
-  return (
-    <>
-      <Construction pageName="My Stories"/>
-    </>
-  )
-}
-
-export default MyStory
->>>>>>> origin/main
