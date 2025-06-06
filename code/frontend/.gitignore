@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 
-<<<<<<< HEAD
 # env files
 .env
 .env.local
@@ -22,8 +21,6 @@ dist-ssr
 .env.development
 .env.test
 
-=======
->>>>>>> origin/main
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
