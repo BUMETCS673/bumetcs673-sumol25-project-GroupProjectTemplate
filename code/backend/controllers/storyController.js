@@ -142,66 +142,74 @@ const generateCompleteStory = async (req, res) => {
 
       // Update generation request for successful story
       generationRequest.results.storyGenerated = true;
-      
+
       // Generate audio and image in parallel
       const [audioPromise, imagePromise] = await Promise.allSettled([
         // Audio generation
-        storyData && storyData.story ? (async () => {
-          try {
-            console.log("Starting audio generation...");
+        storyData && storyData.story
+          ? (async () => {
+              try {
+                console.log("Starting audio generation...");
 
-            const audioGenerationResult = await generateAudioWithOpenAI({
-              text: storyData.story,
-              voice: req.validatedData.voice || "nova",
-              model: req.validatedData.audioModel || "tts-1",
-              responseFormat: req.validatedData.audioFormat || "mp3",
-              speed: 0.9,
-            });
+                const audioGenerationResult = await generateAudioWithOpenAI({
+                  text: storyData.story,
+                  voice: req.validatedData.voice || "nova",
+                  model: req.validatedData.audioModel || "tts-1",
+                  responseFormat: req.validatedData.audioFormat || "mp3",
+                  speed: 0.8,
+                });
 
-            console.log(
-              "Audio generation completed, received buffer of size:",
-              audioGenerationResult.audioBuffer?.length
-            );
+                console.log(
+                  "Audio generation completed, received buffer of size:",
+                  audioGenerationResult.audioBuffer?.length
+                );
 
-            if (audioGenerationResult.audioBuffer) {
-              generationRequest.results.audioGenerated = true;
-              return {
-                audioBuffer: audioGenerationResult.audioBuffer,
-                voice: req.validatedData.voice || "nova",
-                audioFormat: req.validatedData.audioFormat || "mp3",
-              };
-            } else {
-              console.error("No audio buffer received from OpenAI");
-              generationRequest.results.audioError = "No audio buffer received";
-              return null;
-            }
-          } catch (audioError) {
-            console.error("Audio generation failed:", audioError);
-            generationRequest.results.audioError =
-              audioError.message || "Unknown audio error";
-            return null;
-          }
-        })() : Promise.resolve(null),
+                if (audioGenerationResult.audioBuffer) {
+                  generationRequest.results.audioGenerated = true;
+                  return {
+                    audioBuffer: audioGenerationResult.audioBuffer,
+                    voice: req.validatedData.voice || "nova",
+                    audioFormat: req.validatedData.audioFormat || "mp3",
+                  };
+                } else {
+                  console.error("No audio buffer received from OpenAI");
+                  generationRequest.results.audioError =
+                    "No audio buffer received";
+                  return null;
+                }
+              } catch (audioError) {
+                console.error("Audio generation failed:", audioError);
+                generationRequest.results.audioError =
+                  audioError.message || "Unknown audio error";
+                return null;
+              }
+            })()
+          : Promise.resolve(null),
 
         // Image generation
-        storyData && storyData.imageDescription ? (async () => {
-          try {
-            const result = await generateImageWithOpenAI(storyData.imageDescription);
-            generationRequest.results.imageGenerated = true;
-            return result;
-          } catch (imageError) {
-            console.error("Image generation failed:", imageError);
-            generationRequest.results.imageError =
-              imageError.message || "Unknown error";
-            return null;
-          }
-        })() : Promise.resolve(null)
+        storyData && storyData.imageDescription
+          ? (async () => {
+              try {
+                const result = await generateImageWithOpenAI(
+                  storyData.imageDescription
+                );
+                generationRequest.results.imageGenerated = true;
+                return result;
+              } catch (imageError) {
+                console.error("Image generation failed:", imageError);
+                generationRequest.results.imageError =
+                  imageError.message || "Unknown error";
+                return null;
+              }
+            })()
+          : Promise.resolve(null),
       ]);
 
       // Extract results from settled promises
-      audioResult = audioPromise.status === 'fulfilled' ? audioPromise.value : null;
-      imageResult = imagePromise.status === 'fulfilled' ? imagePromise.value : null;
-
+      audioResult =
+        audioPromise.status === "fulfilled" ? audioPromise.value : null;
+      imageResult =
+        imagePromise.status === "fulfilled" ? imagePromise.value : null;
     } catch (storyError) {
       console.error("Story generation failed:", storyError);
       generationRequest.results.storyError =
@@ -226,7 +234,7 @@ const generateCompleteStory = async (req, res) => {
       const wordCount = storyData.story.split(" ").length;
 
       response.title = storyData.title;
-      response.story = storyData.story;
+      response.content = storyData.story;
       response.summary = storyData.summary;
       response.imageDescription = storyData.imageDescription;
       response.wordCount = wordCount;
@@ -268,6 +276,7 @@ const generateCompleteStory = async (req, res) => {
 
       await savedStory.save();
       response.storyId = savedStory._id;
+      response.audioBuffer = audioResult ? audioResult.audioBuffer : null;
     } else {
       response.success = false;
       response.storyError = "Failed to generate story";
@@ -280,14 +289,18 @@ const generateCompleteStory = async (req, res) => {
     if (imageResult && imageResult.imageUrl && savedStory) {
       uploadPromises.push(
         saveImageFile(imageResult.imageUrl, savedStory._id)
-          .then(imageDownloadUrl => {
+          .then((imageDownloadUrl) => {
             response.imageDownloadUrl = imageDownloadUrl;
-            return { type: 'image', url: imageDownloadUrl };
+            return { type: "image", url: imageDownloadUrl };
           })
-          .catch(imageUploadError => {
-            console.error("Failed to upload image to Firebase Storage:", imageUploadError);
-            response.imageUploadError = imageUploadError.message || "Unknown image upload error";
-            return { type: 'image', error: imageUploadError };
+          .catch((imageUploadError) => {
+            console.error(
+              "Failed to upload image to Firebase Storage:",
+              imageUploadError
+            );
+            response.imageUploadError =
+              imageUploadError.message || "Unknown image upload error";
+            return { type: "image", error: imageUploadError };
           })
       );
     }
@@ -296,14 +309,18 @@ const generateCompleteStory = async (req, res) => {
     if (audioResult && audioResult.audioBuffer && savedStory) {
       uploadPromises.push(
         saveAudioFile(audioResult.audioBuffer, savedStory._id)
-          .then(audioDownloadUrl => {
+          .then((audioDownloadUrl) => {
             response.audioDownloadUrl = audioDownloadUrl;
-            return { type: 'audio', url: audioDownloadUrl };
+            return { type: "audio", url: audioDownloadUrl };
           })
-          .catch(audioUploadError => {
-            console.error("Failed to upload audio to Firebase Storage:", audioUploadError);
-            response.audioUploadError = audioUploadError.message || "Unknown audio upload error";
-            return { type: 'audio', error: audioUploadError };
+          .catch((audioUploadError) => {
+            console.error(
+              "Failed to upload audio to Firebase Storage:",
+              audioUploadError
+            );
+            response.audioUploadError =
+              audioUploadError.message || "Unknown audio upload error";
+            return { type: "audio", error: audioUploadError };
           })
       );
     }
@@ -311,14 +328,14 @@ const generateCompleteStory = async (req, res) => {
     // Wait for all uploads to complete
     if (uploadPromises.length > 0) {
       const uploadResults = await Promise.allSettled(uploadPromises);
-      
+
       // Update saved story with download URLs
       const updates = {};
       for (const result of uploadResults) {
-        if (result.status === 'fulfilled' && result.value.url) {
-          if (result.value.type === 'image') {
+        if (result.status === "fulfilled" && result.value.url) {
+          if (result.value.type === "image") {
             updates.imageUrl = result.value.url;
-          } else if (result.value.type === 'audio') {
+          } else if (result.value.type === "audio") {
             updates.audioUrl = result.value.url;
             generationRequest.results.audioUrl = result.value.url;
           }
@@ -338,7 +355,6 @@ const generateCompleteStory = async (req, res) => {
     await generationRequest.save();
 
     res.json(response);
-
   } catch (error) {
     console.error("Error generating complete package:", error);
 
@@ -361,28 +377,30 @@ const generateCompleteStory = async (req, res) => {
 // Get user's stories
 const getUserStories = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { page = 1, limit = 10, childId } = req.query;
+    const userId = req.user._id;
 
     const query = { userId };
-    if (childId) query.childId = childId;
 
-    const stories = await Story.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .populate("childId", "name age");
-
-    const total = await Story.countDocuments(query);
-
-    res.json({
+    const stories = await Story.find(query).sort({ createdAt: -1 });
+    response = {
       success: true,
-      stories,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total,
-      },
+      total: stories.length,
+      stories: stories.map((story) => ({
+        storyId: story._id,
+        title: story.title,
+        summary: story.summary,
+        imageUrl: story.imageUrl,
+        createdAt: story.createdAt,
+        isSaved: story.isSaved,
+        character: story.character,
+        setting: story.setting,
+        theme: story.theme,
+        wordCount: story.wordCount,
+        isFavorite: story.isFavorite,
+      })),
+    };
+    res.json({
+      response,
     });
   } catch (error) {
     console.error("Error fetching stories:", error);
@@ -399,10 +417,7 @@ const getStory = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const story = await Story.findOne({ _id: id, userId }).populate(
-      "childId",
-      "name age"
-    );
+    const story = await Story.findOne({ _id: id, userId });
 
     if (!story) {
       return res.status(404).json({
@@ -411,9 +426,28 @@ const getStory = async (req, res) => {
       });
     }
 
+    customResponse = {
+      storyId: story._id,
+      title: story.title,
+      content: story.content,
+      summary: story.summary,
+      audioBuffer: story.audioBuffer,
+      imageDescription: story.imageDescription,
+      imageDownloadUrl: story.imageUrl,
+      audioDownloadUrl: story.audioUrl,
+      metadata: {
+        character: story.character,
+        setting: story.setting,
+        theme: story.theme,
+        ageGroup: story.ageGroup,
+      },
+      wordCount: story.wordCount,
+      imageStyle: story.imageStyle,
+      isFavorite: story.isFavorite,
+      createdAt: story.createdAt,
+    };
     res.json({
-      success: true,
-      story,
+      story:customResponse
     });
   } catch (error) {
     console.error("Error fetching story:", error);

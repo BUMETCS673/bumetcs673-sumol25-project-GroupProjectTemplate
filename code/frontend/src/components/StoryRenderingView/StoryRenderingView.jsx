@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Play, Pause, Square, Download } from 'lucide-react';
+import { Play, Pause, Square, Download } from "lucide-react";
 import "./StoryRenderingView.css";
 
-const StoryRenderingView = ({ onBackToSettings }) => {
+const StoryRenderingView = ({ onBackToSettings, generateStory }) => {
   const [storyData, setStoryData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
+  const [loading, setLoading] = useState(false);
+
   // OpenAI TTS states
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -14,123 +14,57 @@ const StoryRenderingView = ({ onBackToSettings }) => {
   const [words, setWords] = useState([]);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  
+  const [audioError, setAudioError] = useState(null);
+
+  console.log("Current Story:", generateStory);
+
   // Audio refs
   const audioRef = useRef(null);
   const timeUpdateIntervalRef = useRef(null);
 
-  // VARIANT A: Placeholder (for UI work)
   useEffect(() => {
-    const fakeData = {
-      success: true,
-      metadata: {
-        character: "Bunny",
-        theme: "Animals",
-        setting: "City",
-      },
-      story: `Once upon a time, in a bustling city far, far away, there lived a small, soft bunny named Benny. Even though he was surrounded by tall buildings and busy streets, Benny had made his home in a quiet, green park, right in the middle of the city.
-
-Every morning, Benny would bounce around the park, greeting his friends. There were squirrels, birds, and even a few friendly dogs. Benny loved his city life, but there was one thing he wished for - he wanted to meet other bunnies like him.
-
-One sunny afternoon, Benny noticed a group of children nearby. They were giggling and pointing at a picture book. Being a curious bunny, Benny hopped a little closer. He peeped into the book and saw pictures of bunnies just like him. Benny's heart leaped with joy.
-
-That night, Benny looked around at his new bunny friends, cuddled up in their burrows. He felt a warmth in his heart. He had learned that no matter where you are, you can create your own happiness.
-
-So, my dear little ones, wherever you are, remember, you can always find happiness, just like Benny the Bunny. Now close your eyes, cuddle up, and drift off to dreamland. Good night.`,
-      imageUrl: "/characters/bunny.png",
-      title: "Benny the City Bunny"
-    };
-
-    setStoryData(fakeData);
+    const story = generateStory;
+    setStoryData(story);
     setLoading(false);
-    
-    // Prepare words for highlighting
-    const cleanStory = fakeData.story.replace(/\n\n/g, ' ').replace(/\n/g, ' ');
-    setWords(cleanStory.split(' '));
-  }, []);
 
-  // Generate audio using OpenAI TTS
-  // const generateAudio = async () => {
-  //   if (!storyData || audioLoading) return;
-    
-  //   setAudioLoading(true);
-    
-  //   try {
-  //     // Replace with your actual OpenAI API endpoint
-  //     const response = await fetch('/api/openai/tts', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         text: storyData.story.replace(/\n\n/g, ' ').replace(/\n/g, ' '),
-  //         voice: 'nova', // OpenAI voices: alloy, echo, fable, onyx, nova, shimmer
-  //         model: 'tts-1', // or 'tts-1-hd' for higher quality
-  //         response_format: 'mp3'
-  //       }),
-  //     });
+    // Prepare words for highlighting from content
+    if (story.content) {
+      const cleanStory = story.content
+        .replace(/\n\n/g, " ")
+        .replace(/\n/g, " ");
+      setWords(cleanStory.split(" "));
+    }
 
-  //     if (!response.ok) {
-  //       throw new Error('Failed to generate audio');
-  //     }
+    // Only set up audio if buffer exists, but don't auto-generate
+    if (story.audioBuffer) {
+      console.log("Audio buffer available", story.audioBuffer);
+      setAudioError(null);
+    }
+  }, [generateStory]);
 
-  //     const audioBlob = await response.blob();
-  //     const url = URL.createObjectURL(audioBlob);
-  //     setAudioUrl(url);
-      
-  //     // Load audio to get duration
-  //     if (audioRef.current) {
-  //       audioRef.current.src = url;
-  //       audioRef.current.load();
-  //     }
-      
-  //   } catch (error) {
-  //     console.error('Error generating audio:', error);
-  //     alert('Failed to generate audio. Please try again.');
-  //   } finally {
-  //     setAudioLoading(false);
-  //   }
-  // };
-
-  // Alternative: Direct OpenAI API call (if you have API key on frontend)
   const generateAudio = async () => {
-    if (!storyData || audioLoading) return;
-    
+    if (!storyData || audioLoading || !storyData.audioBuffer) return;
+
     setAudioLoading(true);
+    console.log("Generating audio for story:", storyData.title);
     
     try {
-      const response = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_APP_OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'tts-1',
-          input: storyData.story.replace(/\n\n/g, ' ').replace(/\n/g, ' '),
-          voice: 'nova',
-          response_format: 'mp3',
-          speed:0.9
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate audio');
-      }
-
-      const audioBlob = await response.blob();
-      const url = URL.createObjectURL(audioBlob);
-      console.log('Generated audio :',response);
+      const uint8Array = new Uint8Array(storyData.audioBuffer.data);
+      const blob = new Blob([uint8Array], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
       setAudioUrl(url);
-      
+
       if (audioRef.current) {
         audioRef.current.src = url;
         audioRef.current.load();
       }
-      
+
+      if (audioError) {
+        setAudioError(null);
+      }
     } catch (error) {
-      console.error('Error generating audio:', error);
-      alert('Failed to generate audio. Please check your API key.');
+      console.error("Error generating audio:", error);
+      setAudioError("Failed to generate audio");
     } finally {
       setAudioLoading(false);
     }
@@ -139,11 +73,11 @@ So, my dear little ones, wherever you are, remember, you can always find happine
   // Calculate word timing based on audio progress
   const calculateWordTiming = () => {
     if (!audioDuration || !words.length) return;
-    
+
     // Estimate words per second
     const wordsPerSecond = words.length / audioDuration;
     const currentWordIndex = Math.floor(currentTime * wordsPerSecond);
-    
+
     setCurrentWordIndex(Math.min(currentWordIndex, words.length - 1));
   };
 
@@ -178,18 +112,25 @@ So, my dear little ones, wherever you are, remember, you can always find happine
     setIsPlaying(false);
   };
 
+  const handleAudioError = () => {
+    setAudioError("Failed to load audio");
+    setAudioLoading(false);
+    setIsPlaying(false);
+  };
+
   // Playback controls
   const startReading = async () => {
     if (!audioUrl) {
-      await generateAudio(); // Use generateAudioDirect() if using direct API
+      await generateAudio();
       return;
     }
-    
+
     if (audioRef.current) {
       try {
         await audioRef.current.play();
       } catch (error) {
-        console.error('Error playing audio:', error);
+        console.error("Error playing audio:", error);
+        setAudioError("Failed to play audio");
       }
     }
   };
@@ -211,9 +152,9 @@ So, my dear little ones, wherever you are, remember, you can always find happine
 
   const downloadAudio = () => {
     if (audioUrl) {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = audioUrl;
-      a.download = `${storyData.title || 'story'}.mp3`;
+      a.download = `${storyData.title || "story"}.mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -233,30 +174,33 @@ So, my dear little ones, wherever you are, remember, you can always find happine
   }, [audioUrl]);
 
   const renderStoryWithHighlighting = (story) => {
-    const paragraphs = story.split('\n\n');
+    const paragraphs = story.split("\n\n");
     let globalWordIndex = 0;
-    
+
     return paragraphs.map((paragraph, paraIndex) => {
-      const paraWords = paragraph.split(' ');
+      const paraWords = paragraph.split(" ");
       const highlightedParagraph = paraWords.map((word, wordIndex) => {
         const isCurrentWord = globalWordIndex === currentWordIndex;
         const isReadWord = globalWordIndex < currentWordIndex;
-        
+
         globalWordIndex++;
-        
+
         return (
           <span
             key={`${paraIndex}-${wordIndex}`}
             className={`story-word ${
-              isCurrentWord ? 'current-word' : 
-              isReadWord ? 'read-word' : 'unread-word'
+              isCurrentWord
+                ? "current-word"
+                : isReadWord
+                ? "read-word"
+                : "unread-word"
             }`}
           >
-            {word}{' '}
+            {word}{" "}
           </span>
         );
       });
-      
+
       return <p key={paraIndex}>{highlightedParagraph}</p>;
     });
   };
@@ -264,7 +208,7 @@ So, my dear little ones, wherever you are, remember, you can always find happine
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   if (loading) {
@@ -279,46 +223,45 @@ So, my dear little ones, wherever you are, remember, you can always find happine
     );
   }
 
-  const { metadata, story, imageUrl, title } = storyData;
+  const { metadata, content, imageDownloadUrl, title } = storyData;
 
   return (
     <div className="rendered-story-container">
       <div className="story-header">
         <h1>{title || "Your Magical Story"}</h1>
         <p>
-          Character: {metadata.character} | Theme: {metadata.theme} | Setting:{" "}
-          {metadata.setting}
+          Character: {metadata.character} | Theme: {metadata.theme} | Setting: {metadata.setting}
         </p>
       </div>
 
       <div className="story-illustration">
-        <img src={imageUrl} alt="Story Illustration" />
+        <img src={imageDownloadUrl} alt="Story Illustration" />
       </div>
 
       {/* OpenAI TTS Controls */}
       <div className="read-aloud-controls">
         {!audioUrl ? (
           <button
-            onClick={() => generateAudio()} // Use generateAudioDirect() if using direct API
+            onClick={generateAudio}
             className="read-control-btn generate-audio"
-            disabled={audioLoading}
+            disabled={audioLoading || !storyData.audioBuffer}
           >
             {audioLoading ? (
               <>⏳ Generating Audio...</>
             ) : (
-              <>🎵 Generate Audio</>
+              <>🎵 Start Read-Along</>
             )}
           </button>
         ) : (
           <>
             <button
               onClick={isPlaying ? pauseReading : startReading}
-              className={`read-control-btn ${isPlaying ? 'playing' : ''}`}
+              className={`read-control-btn ${isPlaying ? "playing" : ""}`}
             >
               {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-              {isPlaying ? 'Pause' : 'Play Story'}
+              {isPlaying ? "Pause" : "Play Story"}
             </button>
-            
+
             <button
               onClick={stopReading}
               className="read-control-btn"
@@ -339,13 +282,19 @@ So, my dear little ones, wherever you are, remember, you can always find happine
           </>
         )}
 
+        {audioError && (
+          <div className="audio-error" style={{ color: 'red', fontSize: '12px', marginTop: '5px' }}>
+            {audioError}
+          </div>
+        )}
+
         {isPlaying && audioDuration > 0 && (
           <div className="reading-progress">
             <div className="time-display">
               {formatTime(currentTime)} / {formatTime(audioDuration)}
             </div>
             <div className="progress-bar">
-              <div 
+              <div
                 className="progress-fill"
                 style={{ width: `${(currentTime / audioDuration) * 100}%` }}
               ></div>
@@ -362,13 +311,12 @@ So, my dear little ones, wherever you are, remember, you can always find happine
         onEnded={handleAudioEnded}
         onPlay={handleAudioPlay}
         onPause={handleAudioPause}
-        style={{ display: 'none' }}
+        onError={handleAudioError}
+        style={{ display: "none" }}
       />
 
-      <div className="story-text">
-        {renderStoryWithHighlighting(story)}
-      </div>
-      
+      <div className="story-text">{renderStoryWithHighlighting(content)}</div>
+
       <button onClick={onBackToSettings} className="back-btn">
         Back to story settings
       </button>
@@ -379,11 +327,11 @@ So, my dear little ones, wherever you are, remember, you can always find happine
 export default StoryRenderingView;
 
 /** @ai-generated 
-Base code of this component was AI generated
-Tool: ChatGPT
-Link: https://chatgpt.com/share/683cc78b-78ac-8002-b4ee-7ab15bd48502
-Prompt, short version: "I need to create a StoryRenderingView component. Code it based on this info from the backend developer (I am responsible for the frontend part)" 
-Generated on: 2025-06-01
-Modified by: Tetiana Korchynska
-Modifications: made changes in css mainly, added OpenAI TTS integration with word highlighting
-Verified: Yes, the code met my expectations */
+  Base code of this component was AI generated
+  Tool: ChatGPT
+  Link: https://chatgpt.com/share/683cc78b-78ac-8002-b4ee-7ab15bd48502
+  Prompt, short version: "I need to create a StoryRenderingView component. Code it based on this info from the backend developer (I am responsible for the frontend part)" 
+  Generated on: 2025-06-01
+  Modified by: Tetiana Korchynska
+  Modifications: made changes in css mainly, added OpenAI TTS integration with word highlighting
+  Verified: Yes, the code met my expectations */

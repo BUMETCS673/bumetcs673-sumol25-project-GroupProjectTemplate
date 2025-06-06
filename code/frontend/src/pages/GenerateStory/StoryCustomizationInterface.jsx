@@ -1,8 +1,10 @@
 import { useState } from "react";
 import CharacterCarousel from "./CharacterCarousel";
 import "./StoryCustomizationInterface.css";
-import StoryRenderingView from "../StoryRenderingView/StoryRenderingView";
-
+import StoryRenderingView from "../../components/StoryRenderingView/StoryRenderingView";
+import { useGenerateStory } from "../../hooks/Story/useGenerateStory";
+import { useStoryContext } from "../../hooks/Story/useStoryContext";
+ 
 // Theme and setting options
 const themes = [
   "Friendship",
@@ -41,22 +43,28 @@ const settings = [
 ];
 
 const StoryCustomizationInterface = () => {
-
   // UI state for current menu and user selection
   const [activeMenu, setActiveMenu] = useState("character");
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [selectedSetting, setSelectedSetting] = useState(null);
   const [storyGenerated, setStoryGenerated] = useState(false);
-
   // Check if all options are selected before enabling the GENERATE A STORY button
   const isReady = selectedCharacter && selectedTheme && selectedSetting;
+  const { generateStory, isLoading, error } = useGenerateStory();
+  const { generatedStory } = useStoryContext();
 
   // Trigger story generation view
-  const generateStoryHandler = () => {
-    
+  const generateStoryHandler = async () => {
     console.log(selectedCharacter, selectedTheme, selectedSetting);
     setStoryGenerated(true);
+    await generateStory({ selectedCharacter, selectedTheme, selectedSetting });
+    
+    if (error) {
+      console.error("Error generating story:", error);
+      return;
+    }
+    
   };
 
   // Renders content in the right panel based on current active menu
@@ -114,10 +122,15 @@ const StoryCustomizationInterface = () => {
     <div className="story-container">
       <div className="story-panel">
         {storyGenerated ? (
-          // Show the story view once generated
-          <StoryRenderingView
-            onBackToSettings={() => setStoryGenerated(false)}
-          />
+          
+          isLoading ? (
+            <div className="loading">Loading...</div>
+          ) : (
+            <StoryRenderingView
+              onBackToSettings={() => setStoryGenerated(false)}
+              generateStory={generatedStory[0]}
+            />
+          )
         ) : (
           <>
             <div className="panel-content">

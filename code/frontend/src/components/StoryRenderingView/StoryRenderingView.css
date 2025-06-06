@@ -313,3 +313,27 @@
     height: 4px;
   }
 }
+
+.story-word {
+  transition: all 0.2s ease;
+}
+
+.current-word {
+  background-color: #ffeb3b;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.read-word {
+  color: #666;
+  opacity: 0.7;
+}
+
+.unread-word {
+  color: #000;
+}
+
+.story-paragraph {
+  margin-bottom: 1em;
+}

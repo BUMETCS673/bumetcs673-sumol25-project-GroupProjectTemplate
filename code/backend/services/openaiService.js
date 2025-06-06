@@ -95,7 +95,7 @@ const generateAudioWithOpenAI = async ({
 
     // Get the audio as a buffer
     const buffer = Buffer.from(await response.arrayBuffer());
-
+    
     return {
       audioBuffer: buffer,
       contentType: getContentType(responseFormat),
