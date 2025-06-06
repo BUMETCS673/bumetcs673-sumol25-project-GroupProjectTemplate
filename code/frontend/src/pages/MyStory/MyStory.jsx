@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React, { useState } from 'react';
 import { Book, Play, Calendar, User, MapPin, Sparkles, Search, Filter, Trash2, Eye } from 'lucide-react';
 import './MyStory.css';
