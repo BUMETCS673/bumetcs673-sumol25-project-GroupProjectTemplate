@@ -207,7 +207,7 @@
     width: 100%;
     background: var(--main-gradient);
     text-align: center;
-    padding: 60px 12px;
+    padding: 60px 0;
   }
 
   .signin-h1 {
