@@ -262,6 +262,9 @@
   .SignIn {
     padding-bottom: 200px;
   }
+  .signin-header {
+    width: 90%;
+  }
   .signin-image {
     top: 70%;
   }
@@ -312,7 +315,7 @@
     margin: 12px;
   }
 }
-@media only screen and (max-width: 390px) {
+@media only screen and (max-width: 400px) {
   .SignIn {
     padding-bottom: 175px;
   }
