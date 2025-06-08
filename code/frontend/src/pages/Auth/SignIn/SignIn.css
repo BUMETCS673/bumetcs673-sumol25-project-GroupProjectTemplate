@@ -313,6 +313,9 @@
   .SignIn {
     padding-bottom: 175px;
   }
+  .signin-image {
+    top: 80%;
+  }
 }
 
 .error {
