@@ -205,8 +205,9 @@
 
   .signin-header {
     width: 100%;
-    background: var(--main-gradient);
+    background: transparent;
     text-align: center;
+    margin: 0 auto;
     padding: 60px 0;
   }
 
