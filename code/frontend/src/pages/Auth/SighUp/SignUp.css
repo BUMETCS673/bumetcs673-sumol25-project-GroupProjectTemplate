@@ -280,6 +280,9 @@
   .signup-image {
     top: 70%;
   }
+  .signup-header {
+    width: 90%;
+  }
   .signup-h1 {
     font-size: 40px;
   }
@@ -317,6 +320,7 @@
   }
   .signup-image {
     top: 76%;
+    bottom: 0;
   }
   .signup-box {
     width: 100%;
@@ -325,9 +329,14 @@
     padding-bottom: 100px;
   }
 }
-@media only screen and (max-width: 390px) {
-  .SignIn {
+
+@media only screen and (max-width: 400px) {
+  .SignUp {
     padding-bottom: 175px;
+  }
+  .signup-image {
+    top: 80%;
+    bottom: 0;
   }
 }
 .error {
