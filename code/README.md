@@ -2,7 +2,11 @@
 
 An AI-powered bedtime story generator designed specifically for preschool children (ages 3-5) that creates personalized, educational stories while supporting early childhood development.
 
-## Features
+## 🌟 Live Demo
+
+**Try it now:** [https://velvety-entremet-8ac832.netlify.app/](https://velvety-entremet-8ac832.netlify.app/)
+
+## ✨ Features
 
 - 🎨 **Personalized Stories** - AI-generated tales customized for each child
 - 🔊 **Audio Narration** - Read-along feature with text highlighting
@@ -11,15 +15,17 @@ An AI-powered bedtime story generator designed specifically for preschool childr
 - 🎯 **Age-Appropriate** - Content specifically designed for preschoolers
 - 📱 **Child-Friendly UI** - Simple, colorful interface for young users
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Frontend**: React, Vite
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
 - **AI Integration**: OpenAI GPT API
-- **Authentication**: JWT
+- **Authentication**: JWT, Google OAuth
+- **Hosting**: Netlify (Frontend), Heroku (Backend)
 
-## Getting Started
+
+## 🚀 Getting Started
 
 ### Prerequisites
 - Docker
@@ -28,22 +34,34 @@ An AI-powered bedtime story generator designed specifically for preschool childr
 
 ### Installation
 
-1. Clone the repository
+1. **Clone the repository**
 ```bash
 git clone https://github.com/BUMETCS673/CS673OLSum25Team2.git
 cd code
 ```
 
-2. Set up environment variables
+2. **Set up environment variables**
 ```bash
-# Create .env file in project root
-MONGODB_URI=mongodb://mongo:27017/magical_bedtime
-JWT_SECRET=your_jwt_secret
-OPENAI_API_KEY=your_openai_api_key
-NODE_ENV=development
+# code/frontend/.env
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
 ```
 
-3. Start the application with Docker
+```bash
+# code/backend/.env
+PORT=5500
+NODE_ENV=development
+MONGO_URI=your_mongodb_atlas_connection_string
+SECRET=your_jwt_secret_here
+OPENAI_API_KEY=your_openai_api_key_here
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_firebase_app_id
+```
+
+3. **Start the application with Docker**
 ```bash
 # Build and run all services
 docker-compose up --build
@@ -52,12 +70,13 @@ docker-compose up --build
 docker-compose up -d
 ```
 
-4. Access the application
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-- MongoDB: localhost:27017
+4. **Access the application**
+- **Production**: https://velvety-entremet-8ac832.netlify.app/
+- **Local Frontend**: http://localhost:5173
+- **Local Backend API**: http://localhost:5500
+- **MongoDB**: localhost:27017
 
-### Docker Commands
+### 🐳 Docker Commands
 
 ```bash
 # Stop all services
@@ -66,39 +85,60 @@ docker-compose down
 # View logs
 docker-compose logs
 
+# View logs for specific service
+docker-compose logs frontend
+docker-compose logs backend
+
 # Rebuild specific service
 docker-compose build frontend
 docker-compose build backend
+
+# Clean up containers and images
+docker-compose down --rmi all --volumes --remove-orphans
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-my-magical-bedtime/
+code/
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── assets/
-│   ├── public/
-│   └── Dockerfile
+│   │   ├── components/         # Reusable UI components
+│   │   ├── context/            # React context providers
+│   │   ├── pages/              # Main application pages
+│   │   └── assets/             # Images, icons, and static files
+│   ├── public/                 # Public assets
+│   ├── .env                    # Frontend environment variables
+│   └── Dockerfile              # Frontend container config
 ├── backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── config/
-│   └── Dockerfile
-├── docker-compose.yml
-├── .env
-└── README.md
+│   ├── controllers/            # Request handlers
+│   ├── models/                 # Database schemas
+│   ├── routes/                 # API route definitions
+│   ├── config/                 # Configuration files
+│   ├── .env                    # Backend environment variables
+│   └── Dockerfile              # Backend container config
+├── docker-compose.yml          # Multi-container setup
+└── README.md                   # Project documentation                   # Project documentation
 ```
 
-## API Endpoints
+## 🔌 API Endpoints
 
+### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+
+### Stories
 - `GET /api/stories` - Get user stories
 - `POST /api/stories/generate` - Generate new story
-- `GET /api/children` - Get child profiles
-- `POST /api/children` - Create child profile
+- `GET /api/stories/:id` - Get specific story
+- `DELETE /api/stories/:id` - Delete story
+
+
+## 🎯 Target Audience
+
+This application is designed for:
+- **Primary Users**: Children ages 3-5
+- **Secondary Users**: Parents and caregivers
+- **Use Case**: Bedtime routine enhancement and early literacy development
+

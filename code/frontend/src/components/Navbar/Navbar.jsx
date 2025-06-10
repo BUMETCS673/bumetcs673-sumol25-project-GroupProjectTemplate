@@ -71,6 +71,24 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link
+                    to="/about"
+                    className="navbar-link"
+                    onClick={closeMobileMenu}
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="navbar-link"
+                    onClick={closeMobileMenu}
+                  >
+                    Contact
+                  </Link>
+                </li>
+                <li>
                   <Link to="/" className="navbar-cta" onClick={handleLogout}>
                     SIGN OUT
                   </Link>
