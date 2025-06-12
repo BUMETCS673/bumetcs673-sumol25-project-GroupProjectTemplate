@@ -9,7 +9,8 @@ const {
   getUserStories,
   getStory,
   saveStory,
-  deleteStory
+  deleteStory,
+  generateAudioSample
 } = require('../controllers/storyController');
 
 //Apply authentication to all routes
@@ -35,5 +36,7 @@ router.put('/:id/save', saveStory);
 
 // Delete story
 router.delete('/:id', deleteStory);
+
+router.post('/generate/audio_sample', generateAudioSample);
 
 module.exports = router;

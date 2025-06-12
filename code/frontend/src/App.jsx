@@ -2,7 +2,6 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
   useLocation,
 } from "react-router-dom";
 
@@ -20,6 +19,7 @@ import MyStory from "./pages/MyStory/MyStory";
 import GenerateStory from "./pages/GenerateStory/GenerateStory";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
+import LoginRequired from "./components/LoginRequired/LoginRequired";
 
 function AppContent() {
   const { user } = useAuthContext();
@@ -36,27 +36,20 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route
             path="/generatestory"
-            element={user ? <GenerateStory /> : <Navigate to="/login" />}
+            element={user ? <GenerateStory /> : <LoginRequired pageName="Story Generator" user={user}/>}
           />
           <Route
             path="/mystory"
-            element={user ? <MyStory /> : <Navigate to="/login" />}
+            element={user ? <MyStory /> : <LoginRequired  pageName="My Stories" user={user}/>}
           />
           <Route
             path="/settings"
-            element={user ? <Settings /> : <Navigate to="/login" />}
+            element={user ? <Settings /> : <LoginRequired  pageName="Settings" user={user}/>}
           />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route
-            path="/login"
-            element={!user ? <SignIn /> : <Navigate to="/mystory" />}
-          />
-    
-          <Route
-            path="/signup"
-            element={!user ? <SignUp /> : <Navigate to="/mystory" />}
-          />
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
         </Routes>
       </div>
       <Footer />
