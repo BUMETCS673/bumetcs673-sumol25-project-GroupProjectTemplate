@@ -10,6 +10,7 @@ const {
   deleteImageFile,
   saveAudioFile,
   deleteAudioFile,
+  checkAudioFileExists
 } = require("../services/firebaseStorageService");
 
 const generateStory = async (req, res) => {
@@ -560,9 +561,61 @@ const deleteStory = async (req, res) => {
   }
 };
 
+const generateAudioSample = async (req, res) => {
+  try {
+    const prompt  = "Tell me my magical bedtime adventure where I discover a secret door under my pillow that leads to a land of gentle, sleepy creatures."
+    const { try_voice, try_model } = req.body;
+    const fileName = try_voice + "_" + try_model
+
+    const sampleUrl = await checkAudioFileExists(fileName);
+
+    if(sampleUrl) {
+      return res.json({
+        audioUrl: sampleUrl,
+        voice: try_voice,
+        model: try_model
+      });
+    }
+
+    const audioResult = await generateAudioWithOpenAI({
+      text: prompt,
+      voice: try_voice,
+      model: try_model,
+      responseFormat: "mp3",
+      speed: 0.8,
+    });
+
+    // Upload audio to storage
+    let audioDownloadUrl = null;
+    try {
+      audioDownloadUrl = await saveAudioFile(audioResult.audioBuffer, fileName);
+    } catch (uploadError) {
+      console.error("Failed to upload audio to storage:", uploadError);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to upload audio to storage",
+      });
+    }
+
+    res.json({
+      audioUrl: audioDownloadUrl,
+      voice: try_voice,
+      model: try_model
+    });
+
+   
+  } catch (error) {
+    console.error("Error generating audio:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate audio",
+    });
+  }
+}
 module.exports = {
   generateStory,
   generateAudio,
+  generateAudioSample,
   generateImage,
   getUserStories,
   getStory,

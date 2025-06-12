@@ -199,8 +199,6 @@ const deleteImageFile = async (imageUrl) => {
 };
 
 
-
-
 /**
  * List all files for a specific story
  * @param {string} storyId - The story ID
@@ -251,6 +249,47 @@ const listStoryFiles = async (storyId) => {
   }
 };
 
+
+
+
+/**
+ * Check if audio file exists in Firebase Storage and return URL if it does
+ * @param {string} fileName - The file name
+ * @returns {Promise<string|boolean>} - Download URL if file exists, false otherwise
+ */
+const checkAudioFileExists = async (fileName) => {
+  try {
+    const audioFormat = 'mp3'
+
+  // Create reference to audio directory
+    const audioRef = ref(storage, 'audio/');
+    
+    // List all files in audio directory
+    const listResult = await listAll(audioRef);
+    
+    // Check if our file exists in the list
+    const targetFilename = `${fileName}.${audioFormat}`;
+    const fileExists = listResult.items.some(item => 
+      item.name === targetFilename
+    );
+
+    if (fileExists) {
+      console.log(`Audio file ${fileExists} exists`);
+      const audioRef = ref(storage, `audio/${targetFilename}`);
+      const downloadURL = await getDownloadURL(audioRef);
+      return downloadURL;
+    }
+    
+    console.log(`Audio file ${fileExists} 'does not exist': audio/${targetFilename}`);
+    return fileExists;
+    
+  } catch (error) {
+    console.error('Error checking audio file existence with list:', error.message);
+    return false
+  }
+};
+
+
 /**
  * Helper functions for content types
  */
@@ -299,6 +338,7 @@ module.exports = {
   deleteImageFile,
   listStoryFiles,
   formatFileSize,
+  checkAudioFileExists,
   storage,
   app
 };

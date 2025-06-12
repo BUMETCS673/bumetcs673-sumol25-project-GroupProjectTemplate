@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Book,
+  BookOpen,
   Play,
   Calendar,
   User,
@@ -560,7 +561,7 @@ const MyStory = () => {
                     <button
                       onClick={() => showFullImageHandler(story)}
                       className="story-action-btn primary"
-                      title="Read Story"
+                      title="View Full Image"
                     >
                       <Eye size={16} />
                     </button>
@@ -569,9 +570,9 @@ const MyStory = () => {
                       <button
                         onClick={() => onStorySelect(story)}
                         className="story-action-btn secondary"
-                        title="Play Audio"
+                        title="Read Story"
                       >
-                        <Play size={16} />
+                        <BookOpen size={16} />
                       </button>
                     )}
 
@@ -656,7 +657,7 @@ const MyStory = () => {
                       )}
                       {story.audioUrl && (
                         <span className="feature-badge audio">
-                          <Play size={10} />
+                          <BookOpen size={10} />
                           Audio
                         </span>
                       )}
