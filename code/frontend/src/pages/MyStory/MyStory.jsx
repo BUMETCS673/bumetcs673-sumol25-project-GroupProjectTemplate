@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import "./MyStory.css";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../../hooks/Auth/useAuthContext";
 import StoryModal from "../../components/StoryModal/StoryModal";
 import FullImageViewer from "../../components/FullImageViewer/FullImageViewer";
 import { useStoryContext } from "../../hooks/Story/useStoryContext";
@@ -52,12 +51,10 @@ const MyStory = () => {
   });
 
   const { allStories } = useStoryContext();
-  const { user } = useAuthContext();
   const { getAllStories, getAllStoriesLoading, getAllStoriesError } =
     useGetAllStories();
   const { toggleFavorites } = useToggleFavorites();
-  const { deleteStoryByID, deleteStoryIsLoading, deleteStoryError } =
-    useDeleteStory();
+  const { deleteStoryByID } = useDeleteStory();
 
   const navigate = useNavigate();
   const storiesPerPage = 12;
@@ -125,39 +122,20 @@ const MyStory = () => {
     }
   };
 
-  // API Functions
+
   const toggleFavoriteStory = async (storyId) => {
     try {
+  
       setSaving(storyId);
-
       const story = stories.find((s) => s.storyId === storyId);
       const newFavoriteState = !story.isFavorite;
-
-      const BASE_URL =
-        window.location.protocol === "file:" ||
-        window.location.hostname === "localhost"
-          ? "http://localhost:5500"
-          : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
-
-      const response = await fetch(
-        `${BASE_URL}/api/stories/${storyId}/favorite`,
-        {
-          method: newFavoriteState ? "POST" : "DELETE",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update favorite status");
-      }
+      console.log(newFavoriteState);
+      await toggleFavorites(storyId,newFavoriteState);
 
       // Update local state to reflect favorite status
       setStories((prev) =>
         prev.map((story) =>
-          story.id === storyId
+          story.storyId === storyId
             ? { ...story, isFavorite: newFavoriteState }
             : story
         )

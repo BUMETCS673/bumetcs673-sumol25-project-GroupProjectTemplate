@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { X, User, MapPin, Sparkles, Calendar, Play, Eye, Volume2 } from 'lucide-react';
 import './StoryModal.css';
-import FullImageViewer from '../FullImageViewer/FullImageViewer';
 const StoryModal = ({ story, isOpen, onClose, onNext, onPrevious }) => {
-  const [showFullImage, setShowFullImage] = useState(false);
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -40,16 +38,6 @@ const StoryModal = ({ story, isOpen, onClose, onNext, onPrevious }) => {
 
   return (
     <div className="story-modal-overlay" onClick={onClose}>
-      {/* Full Image Viewer Component */}
-      <FullImageViewer
-        isOpen={showFullImage}
-        imageUrl={story.imageUrl}
-        title={story.title}
-        onClose={() => setShowFullImage(false)}
-        showControls={true}        // Show zoom, rotate, download controls
-        allowDownload={true}       // Allow image download
-      />
-          
       <div className="story-modal" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="story-modal-header">
@@ -102,13 +90,6 @@ const StoryModal = ({ story, isOpen, onClose, onNext, onPrevious }) => {
                 alt={story.title || 'Story illustration'}
                 className="story-modal-image"
               />
-              <button 
-          onClick={() => setShowFullImage(true)}
-          className="view-full-btn"
-        >
-          <Eye size={20} />
-          View Full Size
-        </button>
             </div>
           )}
 

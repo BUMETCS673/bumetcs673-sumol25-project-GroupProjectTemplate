@@ -447,14 +447,22 @@ const getStory = async (req, res) => {
 const saveStory = async (req, res) => {
   try {
     const { id } = req.params;
+    const { isFavorite } = req.body; // Get isFavorite from request body
     const userId = req.user.id;
+
+    // Validate isFavorite parameter
+    if (typeof isFavorite !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "isFavorite must be a boolean value (true or false)",
+      });
+    }
+
+    // Update the story's favorite status
     const story = await Story.findOneAndUpdate(
       { _id: id, userId },
-      { isFavorite: true }
+      { isFavorite: isFavorite },
     );
-
-    const allStories = await Story.find({ userId })
-      .sort({ createdAt: -1 })
 
     if (!story) {
       return res.status(404).json({
@@ -462,6 +470,8 @@ const saveStory = async (req, res) => {
         message: "Story not found",
       });
     }
+
+    const allStories = await Story.find({ userId }).sort({ createdAt: -1 });
 
     response = {
       success: true,
@@ -512,8 +522,7 @@ const deleteStory = async (req, res) => {
         message: "Story not found",
       });
     }
-    const allStories = await Story.find({ userId })
-      .sort({ createdAt: -1 })
+    const allStories = await Story.find({ userId }).sort({ createdAt: -1 });
 
     response = {
       success: true,

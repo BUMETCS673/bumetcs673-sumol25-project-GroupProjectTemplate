@@ -721,11 +721,58 @@ select {
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-md);
+  animation: subtlePulse 3s infinite;
 }
 
-.story-action-btn.primary, .story-action-btn.secondary, .story-action-btn.save, .story-action-btn.saved, .story-action-btn.danger {
+.story-action-btn.primary, .story-action-btn.secondary, .story-action-btn.save, .story-action-btn.danger {
   background: var(--primary);
   color: var(--white);
+}
+
+.story-action-btn.saved {
+  background: linear-gradient(
+    160deg,
+    #ff6b9d 0%,
+    #ff8a9b 50%,
+    var(--accent) 100%
+  );
+  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+  border: 2px solid rgba(255, 107, 157, 0.3);
+  transform: scale(0.98);
+  color: var(--white);
+}
+
+.story-action-btn.save:hover {
+  box-shadow: 0 8px 25px rgba(49, 240, 255, 0.6);
+}
+
+.story-action-btn.saved:hover {
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.6);
+  border-color: rgba(255, 107, 157, 0.5);
+}
+
+/* Focus styles for accessibility */
+.story-action-btn:focus {
+  outline: none;
+  box-shadow: 0 4px 15px rgba(49, 240, 255, 0.3), 
+              0 0 0 3px rgba(49, 240, 255, 0.3);
+}
+
+.story-action-btn.saved:focus {
+  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4), 
+              0 0 0 3px rgba(255, 107, 157, 0.3);
+}
+
+
+@keyframes subtlePulse {
+  0%, 100% { 
+    box-shadow: 0 4px 15px rgba(49, 240, 255, 0.3);
+    border-color: rgba(49, 240, 255, 0.2);
+  }
+  50% { 
+    box-shadow: 0 4px 20px rgba(49, 240, 255, 0.5);
+    border-color: rgba(49, 240, 255, 0.3);
+  }
 }
 
 .story-action-btn:hover {
