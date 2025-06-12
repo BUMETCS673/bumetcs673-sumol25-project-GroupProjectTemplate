@@ -53,6 +53,7 @@ const GenerateStory = () => {
   // Check if all options are selected before enabling the GENERATE A STORY button
   const isReady = selectedCharacter && selectedTheme && selectedSetting;
   const {
+    resetGenerateStory,
     generateStory,
     isLoadingStory,
     isStoryComplete,
@@ -67,6 +68,7 @@ const GenerateStory = () => {
   // Trigger story generation view
   const generateStoryHandler = async () => {
     console.log(selectedCharacter, selectedTheme, selectedSetting);
+    resetGenerateStory();
     setStoryGenerated(true);
     await generateStory({ selectedCharacter, selectedTheme, selectedSetting });
 
@@ -77,7 +79,7 @@ const GenerateStory = () => {
   };
 
   // Renders content in the right panel based on current active menu
-  // (charater, there, or setting selection)
+  // ( character, there, or setting selection)
   const renderRightPanel = () => {
     if (activeMenu === "character") {
       return (

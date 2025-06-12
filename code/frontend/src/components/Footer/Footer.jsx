@@ -20,9 +20,9 @@ const Footer = () => {
             <Link to="/contact">Contact</Link>
           </div>
           <div className="footer-column">
-            <Link to="/dashboard">Dashboard</Link>
             <Link to="/mystory">My Stories</Link>
             <Link to="/generatestory">Generate a Story</Link>
+            <Link to="/settings">Settings</Link>
           </div>
         </div>
       </div>

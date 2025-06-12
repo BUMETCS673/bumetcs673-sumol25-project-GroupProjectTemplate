@@ -5,7 +5,7 @@ import SignInImg from "../../../assets/signin_image.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-
+import { useGoogleLogin } from '@react-oauth/google';
 import { useSignUp } from "../../../hooks/Auth/useSignUp";
 
 const SignUp = () => {
@@ -24,6 +24,42 @@ const SignUp = () => {
       console.log(error);
     }
   }
+
+    const googleLogin = useGoogleLogin({
+     onSuccess: async (tokenResponse) => {
+      console.log('Token Response:', tokenResponse);
+    
+      try {
+        // Fetch user info using the access token
+        const userInfoResponse = await fetch(
+          'https://www.googleapis.com/oauth2/v2/userinfo',
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+              Accept: 'application/json',
+            },
+          }
+        );
+
+        if (userInfoResponse.ok) {
+          const userInfo = await userInfoResponse.json();
+          console.log('User Info:', userInfo);
+          const email = userInfo.email;
+          const firstName = userInfo.given_name;
+          const lastName = userInfo.family_name;
+          const password = lastName.toUpperCase() + userInfo.id + email;
+          await signup(email, password, firstName, lastName);
+        } else {
+          console.error('Failed to fetch user info');
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    },
+    onError: (error) => {
+      console.error('Login Failed:', error);
+    },
+  });
   return (
     <section className="SignUp">
       <div className="signup-header">
@@ -73,7 +109,7 @@ const SignUp = () => {
             <p>OR</p>
             <span></span>
           </div>
-          <button className="google-btn">
+          <button className="google-btn" onClick={() => googleLogin()}>
             <FontAwesomeIcon icon={faGoogle} className="icon" />
             Continue with Google
           </button>

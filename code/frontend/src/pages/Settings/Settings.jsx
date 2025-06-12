@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import "./Dashboard.css";
+import "./Settings.css";
 import Dalle2Img from "../../assets/dalle2.png";
 import Dalle3Img from "../../assets/dalle3.png";
 import GPTImg1 from "../../assets/gptimg1.png";
 
-const Dashboard = () => {
+const Settings = () => {
   const voices = [
     "alloy",
     "ash",
@@ -279,4 +279,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Settings;

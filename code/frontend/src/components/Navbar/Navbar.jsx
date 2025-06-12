@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Navbar.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthContext } from "../../hooks/Auth/useAuthContext";
 import { useLogout } from "../../hooks/Auth/useLogout";
 import Logo from "../../assets/logo.png";
@@ -10,7 +10,9 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuthContext();
   const { logout } = useLogout();
+  const location = useLocation();
 
+  // Check if the user is scrolled
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -20,18 +22,27 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Toggle the mobile menu
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Close the mobile menu
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Handle logout
   const handleLogout = () => {
     closeMobileMenu();
     logout();
   };
+
+  // Check if the current path is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <>
       <nav className={`navbar ${isScrolled ? "scrolled" : ""}`}>
@@ -45,17 +56,10 @@ const Navbar = () => {
               <>
                 <li>
                   <Link
-                    to="/dashboard"
-                    className="navbar-link"
-                    onClick={closeMobileMenu}
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     to="/mystory"
-                    className="navbar-link"
+                    className={`navbar-link ${
+                      isActive("/mystory") ? "active" : ""
+                    }`}
                     onClick={closeMobileMenu}
                   >
                     My Stories
@@ -64,7 +68,9 @@ const Navbar = () => {
                 <li>
                   <Link
                     to="/generatestory"
-                    className="navbar-link"
+                    className={`navbar-link ${
+                      isActive("/generatestory") ? "active" : ""
+                    }`}
                     onClick={closeMobileMenu}
                   >
                     Story Generator
@@ -72,8 +78,22 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
+                    to="/settings"
+                    className={`navbar-link ${
+                      isActive("/settings") ? "active" : ""
+                    }`}
+                    onClick={closeMobileMenu}
+                  >
+                    Settings
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
                     to="/about"
-                    className="navbar-link"
+                    className={`navbar-link ${
+                      isActive("/about") ? "active" : ""
+                    }`}
                     onClick={closeMobileMenu}
                   >
                     About
@@ -82,14 +102,20 @@ const Navbar = () => {
                 <li>
                   <Link
                     to="/contact"
-                    className="navbar-link"
+                    className={`navbar-link ${
+                      isActive("/contact") ? "active" : ""
+                    }`}
                     onClick={closeMobileMenu}
                   >
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link to="/" className="navbar-cta" onClick={handleLogout}>
+                  <Link
+                    to="/"
+                    className="navbar-cta navbar-cta-signout"
+                    onClick={handleLogout}
+                  >
                     SIGN OUT
                   </Link>
                 </li>
@@ -154,7 +180,6 @@ const Navbar = () => {
             <span></span>
             <span></span>
             <span></span>
-        
           </button>
         </div>
       </nav>

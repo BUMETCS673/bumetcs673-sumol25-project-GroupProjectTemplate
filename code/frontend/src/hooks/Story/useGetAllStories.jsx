@@ -31,7 +31,7 @@ export const useGetAllStories = () => {
     if (response.ok) {
       // Dispatch the fetched stories to the context
       dispatch({ type: "GET_STORIES", payload: json });
-
+      console.log("Fetched Stories:", json);
       setIsLoading(false);
     }
   }
