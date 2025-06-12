@@ -61,7 +61,6 @@ const Settings = () => {
 
   const [selectedVoice, setSelectedVoice] = useState("alloy");
   const [selectedTTSModel, setSelectedTTSModel] = useState("tts-1");
-  const [speechSpeed, setSpeechSpeed] = useState(1.0);
   const [selectedImageModel, setSelectedImageModel] = useState("dall-e-2");
   const [wordCount, setWordCount] = useState(300);
   const [selectedThemes, setSelectedThemes] = useState([]);
@@ -71,7 +70,6 @@ const Settings = () => {
     console.log({
       voice: selectedVoice,
       ttsModel: selectedTTSModel,
-      speed: speechSpeed,
     });
   };
 
@@ -139,18 +137,6 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="tts-group">
-            <label>Speech Speed: {speechSpeed.toFixed(2)}x</label>
-            <input
-              type="range"
-              min="0.7"
-              max="1.0"
-              step="0.01"
-              value={speechSpeed}
-              onChange={(e) => setSpeechSpeed(parseFloat(e.target.value))}
-            />
-          </div>
-
           <div className="save-button-group">
             <button className="preview-btn" onClick={handlePreview}>
               Preview Voice
@@ -204,7 +190,7 @@ const Settings = () => {
             <input
               type="range"
               min="150"
-              max="1000"
+              max="500"
               step="10"
               value={wordCount}
               onChange={(e) => setWordCount(parseInt(e.target.value))}

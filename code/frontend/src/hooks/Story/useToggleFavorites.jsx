@@ -8,7 +8,7 @@ export const useToggleFavorites = () => {
   const [isLoading, setIsLoading] = useState(null);
   const { user } = useAuthContext();
 
-  const toggleFavorites = async (storyId) => {
+  const toggleFavorites = async (storyId, p_isFavorite) => {
     setIsLoading(true);
     setError(null);
 
@@ -24,6 +24,9 @@ export const useToggleFavorites = () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user.token}`,
       },
+      body: JSON.stringify({
+        isFavorite: p_isFavorite,
+      }),
     });
 
     const json = await response.json();
