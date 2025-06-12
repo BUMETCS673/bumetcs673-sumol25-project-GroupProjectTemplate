@@ -276,8 +276,6 @@
   font-family: var(--main-font);
 }
 
-/* Responsive adjustments */
-
 @media only screen and (max-width: 960px) {
   .dashboard-container p {
     font-size: 15px;
