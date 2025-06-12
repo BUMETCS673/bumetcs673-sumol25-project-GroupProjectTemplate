@@ -59,7 +59,7 @@
   padding-top: 20px;
 }
 
-/* Tablet: logo on top, two side-by-side columns */
+
 @media (max-width: 900px) {
   .footer-container {
     flex-direction: column;
@@ -82,7 +82,7 @@
   }
 }
 
-/* Mobile: everything stacked */
+
 @media (max-width: 600px) {
   .footer-columns-wrapper {
     flex-direction: column;
