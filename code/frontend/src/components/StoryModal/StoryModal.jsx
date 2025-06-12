@@ -141,7 +141,7 @@ const StoryModal = ({ story, isOpen, onClose, onNext, onPrevious }) => {
               </div>
             )}
 
-              {/* Audio Player */}
+            {/* Audio Player */}
             {story.audioUrl && (
               <div className="story-modal-audio-section">
                 <div className="story-modal-audio-header">
@@ -149,10 +149,12 @@ const StoryModal = ({ story, isOpen, onClose, onNext, onPrevious }) => {
                   <h4>Listen to Story</h4>
                 </div>
                 <audio 
+                  key={story.id || story.audioUrl} // Add key to force re-render
                   controls 
                   className="story-modal-audio"
                   preload="metadata"
                 >
+                  <source src={story.audioUrl} type="audio/mp3" />
                   <source src={story.audioUrl} type="audio/mpeg" />
                   <source src={story.audioUrl} type="audio/wav" />
                   <source src={story.audioUrl} type="audio/ogg" />

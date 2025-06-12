@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useStoryContext } from "../../hooks/Story/useStoryContext";
-import { useAuthContext } from "../../hooks/Auth/useAuthContext";
+import { useStoryContext } from "./useStoryContext";
+import { useAuthContext } from "../Auth/useAuthContext";
 
-export const useGetAllStories = () => {
+export const useDeleteStory = () => {
   const { dispatch } = useStoryContext();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
   const { user } = useAuthContext();
 
-  const getAllStories = async () => {
+  const deleteStoryByID = async (storyId) => {
     setIsLoading(true);
     setError(null);
 
@@ -18,9 +18,9 @@ export const useGetAllStories = () => {
         ? "http://localhost:5500"
         : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
 
-    const response = await fetch(`${BASE_URL}/api/stories`, {
-      method: "GET",
-      headers: {
+    const response = await fetch(`${BASE_URL}/api/stories/${storyId}`, {
+      method: "DELETE",
+       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user.token}`,
       },
@@ -34,11 +34,12 @@ export const useGetAllStories = () => {
     }
 
     if (response.ok) {
-      // Dispatch the fetched stories to the context
+      // Dispatch the fetched story to the context
       dispatch({ type: "GET_STORIES", payload: json.response.stories });
-      console.log("Fetched Stories:", json);
+      console.log("Fetched Story:", json);
       setIsLoading(false);
     }
   };
-  return { getAllStories, getAllStoriesLoading: isLoading, getAllStoriesError: error  };
+
+  return { deleteStoryByID, deleteStoryIsLoading: isLoading, deleteStoryError: error }
 };

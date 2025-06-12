@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useStoryContext } from "../../hooks/Story/useStoryContext";
-// import { useAuthContext } from "../../hooks/Auth/AuthContext";
 import { useAuthContext } from "../../hooks/Auth/useAuthContext";
 
 export const useGenerateStory = () => {

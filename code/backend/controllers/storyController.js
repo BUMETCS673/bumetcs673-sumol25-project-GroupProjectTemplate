@@ -7,7 +7,9 @@ const {
 } = require("../services/openaiService");
 const {
   saveImageFile,
+  deleteImageFile,
   saveAudioFile,
+  deleteAudioFile,
 } = require("../services/firebaseStorageService");
 
 const generateStory = async (req, res) => {
@@ -227,10 +229,8 @@ const generateImage = async (req, res) => {
   const startTime = Date.now();
   const { imageDescription, storyId } = req.body;
 
-  console.log(imageDescription, storyId)
+  console.log(imageDescription, storyId);
   try {
-    
-
     console.log("Generating image for story:", storyId, imageDescription);
 
     // Generate image
@@ -294,7 +294,6 @@ const generateAudio = async (req, res) => {
   const { text, storyId } = req.body;
 
   try {
-    
     console.log("Generating audio for story:", storyId, text);
 
     // Generate audio
@@ -334,7 +333,7 @@ const generateAudio = async (req, res) => {
     const updates = {
       audioUrl: audioDownloadUrl,
     };
-    
+
     await Story.findByIdAndUpdate(storyId, updates);
 
     const endTime = Date.now();
@@ -377,7 +376,6 @@ const getUserStories = async (req, res) => {
         imageUrl: story.imageUrl,
         audioUrl: story.audioUrl,
         createdAt: story.createdAt,
-        isSaved: story.isSaved,
         character: story.character,
         setting: story.setting,
         theme: story.theme,
@@ -452,9 +450,11 @@ const saveStory = async (req, res) => {
     const userId = req.user.id;
     const story = await Story.findOneAndUpdate(
       { _id: id, userId },
-      { isSaved: true },
-      { new: true }
+      { isFavorite: true }
     );
+
+    const allStories = await Story.find({ userId })
+      .sort({ createdAt: -1 })
 
     if (!story) {
       return res.status(404).json({
@@ -463,10 +463,29 @@ const saveStory = async (req, res) => {
       });
     }
 
+    response = {
+      success: true,
+      total: allStories.length,
+      stories: allStories.map((story) => ({
+        storyId: story._id,
+        title: story.title,
+        content: story.content,
+        summary: story.summary,
+        imageUrl: story.imageUrl,
+        audioUrl: story.audioUrl,
+        createdAt: story.createdAt,
+        character: story.character,
+        setting: story.setting,
+        theme: story.theme,
+        wordCount: story.wordCount,
+        isFavorite: story.isFavorite,
+      })),
+    };
+
     res.json({
       success: true,
       message: "Story saved to favorites",
-      story,
+      response,
     });
   } catch (error) {
     console.error("Error saving story:", error);
@@ -493,12 +512,36 @@ const deleteStory = async (req, res) => {
         message: "Story not found",
       });
     }
+    const allStories = await Story.find({ userId })
+      .sort({ createdAt: -1 })
+
+    response = {
+      success: true,
+      total: allStories.length,
+      stories: allStories.map((story) => ({
+        storyId: story._id,
+        title: story.title,
+        content: story.content,
+        summary: story.summary,
+        imageUrl: story.imageUrl,
+        audioUrl: story.audioUrl,
+        createdAt: story.createdAt,
+        character: story.character,
+        setting: story.setting,
+        theme: story.theme,
+        wordCount: story.wordCount,
+        isFavorite: story.isFavorite,
+      })),
+    };
 
     res.json({
       success: true,
       message: "Story deleted successfully",
-      deletedStory: story,
+      response,
     });
+
+    deleteImageFile(story.imageUrl);
+    deleteAudioFile(story.audioUrl);
   } catch (error) {
     console.error("Error deleting story:", error);
     res.status(500).json({
