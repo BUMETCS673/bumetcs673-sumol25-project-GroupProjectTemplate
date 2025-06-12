@@ -12,16 +12,23 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  Save,
+  Heart,
+  AlertTriangle,
 } from "lucide-react";
 import "./MyStory.css";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../hooks/Auth/useAuthContext";
 import StoryModal from "../../components/StoryModal/StoryModal";
 import FullImageViewer from "../../components/FullImageViewer/FullImageViewer";
-const MyStory = ({ loading: propLoading = false }) => {
+import { useStoryContext } from "../../hooks/Story/useStoryContext";
+import { useDeleteStory } from "../../hooks/Story/useDeleteStory";
+import { useToggleFavorites } from "../../hooks/Story/useToggleFavorites";
+import { useGetAllStories } from "../../hooks/Story/useGetAllStories";
+
+const MyStory = () => {
   // State management
   const [stories, setStories] = useState([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(-1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,22 +40,62 @@ const MyStory = ({ loading: propLoading = false }) => {
     theme: "",
   });
   const [showFullImage, setShowFullImage] = useState(false);
-const [showFullImageStory, setShowFullImageStory] = useState(null);
+  const [showFullImageStory, setShowFullImageStory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(propLoading);
-  const [error, setError] = useState(null);
-  const [saving, setSaving] = useState(null); // Track which story is being saved
+  const [saving, setSaving] = useState(null); // Track which story is being favorited
   const [deleting, setDeleting] = useState(null); // Track which story is being deleted
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "favorites"
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    isOpen: false,
+    storyId: null,
+    storyTitle: "",
+  });
+
+  const { allStories } = useStoryContext();
   const { user } = useAuthContext();
+  const { getAllStories, getAllStoriesLoading, getAllStoriesError } =
+    useGetAllStories();
+  const { toggleFavorites } = useToggleFavorites();
+  const { deleteStoryByID, deleteStoryIsLoading, deleteStoryError } =
+    useDeleteStory();
 
   const navigate = useNavigate();
   const storiesPerPage = 12;
 
+  // Fetch stories on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await getAllStories();
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+        setIsInitialized(true);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Update local stories when context data changes
+  useEffect(() => {
+    if (!getAllStoriesLoading && allStories && isInitialized) {
+      setStories(allStories);
+    }
+
+    if (getAllStoriesError) {
+      console.error("Error fetching stories:", getAllStoriesError);
+    }
+  }, [allStories, getAllStoriesLoading, getAllStoriesError, isInitialized]);
+
   // Story selection handlers
   const onStorySelect = (story) => {
+    console.log(story);
     const storyIndex = filteredAndSortedStories.findIndex(
-      (s) => s.id === story.id
+      (s) => s.storyId === story.storyId
     );
+
+    console.log(storyIndex);
     setSelectedStory(story);
     setSelectedStoryIndex(storyIndex);
     setIsModalOpen(true);
@@ -79,10 +126,12 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
   };
 
   // API Functions
-  const fetchStories = async () => {
+  const toggleFavoriteStory = async (storyId) => {
     try {
-      setLoading(true);
-      setError(null);
+      setSaving(storyId);
+
+      const story = stories.find((s) => s.storyId === storyId);
+      const newFavoriteState = !story.isFavorite;
 
       const BASE_URL =
         window.location.protocol === "file:" ||
@@ -90,103 +139,80 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
           ? "http://localhost:5500"
           : "https://mymagicalbedtime-25abceb2c11f.herokuapp.com";
 
-      // Replace with your actual API endpoint
-      const response = await fetch(`${BASE_URL}/api/stories`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/stories/${storyId}/favorite`,
+        {
+          method: newFavoriteState ? "POST" : "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch stories");
+        throw new Error("Failed to update favorite status");
       }
 
-      const data = await response.json();
-      console.log(data);
-      setStories(data.response.stories || []);
-    } catch (err) {
-      setError(err.message);
-      console.error("Error fetching stories:", err);
-      console.error("error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveStory = async (storyId) => {
-    try {
-      setSaving(storyId);
-
-      const response = await fetch(`/api/stories/${storyId}/save`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save story");
-      }
-
-      // Update local state to reflect saved status
+      // Update local state to reflect favorite status
       setStories((prev) =>
         prev.map((story) =>
           story.id === storyId
-            ? { ...story, isSaved: true, savedAt: new Date().toISOString() }
+            ? { ...story, isFavorite: newFavoriteState }
             : story
         )
       );
     } catch (err) {
-      console.error("Error saving story:", err);
-      setError("Failed to save story");
+      console.error("Error updating favorite status:", err);
     } finally {
       setSaving(null);
     }
   };
 
-  const deleteStory = async (storyId) => {
-    try {
-      setDeleting(storyId);
-
-      const response = await fetch(`/api/stories/${storyId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete story");
-      }
-
-      // Remove story from local state
-      setStories((prev) => prev.filter((story) => story.id !== storyId));
-
-      // Adjust current page if needed
-      const newTotalPages = Math.ceil((stories.length - 1) / storiesPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
-      }
-    } catch (err) {
-      console.error("Error deleting story:", err);
-      setError("Failed to delete story");
-    } finally {
-      setDeleting(null);
-    }
+  // Delete confirmation handlers
+  const showDeleteConfirmation = async (story) => {
+    console.log(story.storyId);
+    await setDeleteConfirmation({
+      isOpen: true,
+      storyId: story.storyId,
+      storyTitle: story.title || "Untitled Story",
+    });
   };
 
-  // Load stories on component mount
-  useEffect(() => {
-    fetchStories();
-  }, []);
+  const hideDeleteConfirmation = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      storyId: null,
+      storyTitle: "",
+    });
+  };
+
+  const confirmDelete = async () => {
+    setDeleting(deleteConfirmation.storyId);
+    await deleteStoryByID(deleteConfirmation.storyId);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setStories((prev) =>
+      prev.filter((story) => story.storyId !== deleteConfirmation.storyId)
+    );
+
+    const newTotalPages = Math.ceil((stories.length - 1) / storiesPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    }
+
+    hideDeleteConfirmation();
+  };
 
   // Advanced filtering and sorting
   const filteredAndSortedStories = useMemo(() => {
     let filtered = stories.filter((story) => {
+      // Tab filtering
+      if (activeTab === "favorites" && !story.isFavorite) {
+        return false;
+      }
+
       const matchesSearch =
         !searchTerm ||
         story.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -215,6 +241,14 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
           return new Date(a.createdAt) - new Date(b.createdAt);
         case "title":
           return (a.title || "").localeCompare(b.title || "");
+        case "favorites":
+          // Favorites first, then by creation date
+          if (a.isFavorite && b.isFavorite) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          if (a.isFavorite) return -1;
+          if (b.isFavorite) return 1;
+          return new Date(b.createdAt) - new Date(a.createdAt);
         case "newest":
         default:
           return new Date(b.createdAt) - new Date(a.createdAt);
@@ -222,7 +256,7 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
     });
 
     return filtered;
-  }, [stories, searchTerm, sortBy, filterBy]);
+  }, [stories, searchTerm, sortBy, filterBy, activeTab]);
 
   // Pagination
   const totalPages = Math.ceil(
@@ -248,8 +282,9 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortBy, filterBy]);
-// showFullImage
+  }, [searchTerm, sortBy, filterBy, activeTab]);
+
+  // showFullImage
   const showFullImageHandler = (curStory) => {
     console.log(curStory);
     setShowFullImageStory(curStory);
@@ -280,10 +315,15 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
     setSortBy("newest");
   };
 
+  // Count favorite stories
+  const favoriteStoriesCount = stories.filter(
+    (story) => story.isFavorite
+  ).length;
+
   const hasActiveFilters =
     searchTerm || filterBy.character || filterBy.setting || filterBy.theme;
 
-  if (loading) {
+  if (getAllStoriesLoading || !isInitialized) {
     return (
       <div className="story-list-container">
         <div className="story-list-loading">
@@ -296,13 +336,52 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
 
   return (
     <div className="story-list-container">
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.isOpen && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <div className="delete-modal-icon">
+              <AlertTriangle size={40} />
+            </div>
+
+            <h3 className="delete-modal-title">Delete Story?</h3>
+
+            <p className="delete-modal-text">
+              Are you sure you want to delete "
+              <strong>{deleteConfirmation.storyTitle}</strong>"? This action
+              cannot be undone.
+            </p>
+
+            <div className="delete-modal-actions">
+              <button
+                onClick={hideDeleteConfirmation}
+                className="delete-modal-btn cancel"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                disabled={deleting === deleteConfirmation.storyId}
+                className={`delete-modal-btn confirm ${
+                  deleting === deleteConfirmation.storyId ? "loading" : ""
+                }`}
+              >
+                {deleting === deleteConfirmation.storyId
+                  ? "Deleting..."
+                  : "Delete Story"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <FullImageViewer
         isOpen={showFullImage}
         imageUrl={showFullImageStory?.imageUrl}
         title={showFullImageStory?.title}
         onClose={() => setShowFullImage(false)}
-        showControls={true} // Show zoom, rotate, download controls
-        allowDownload={true} // Allow image download
+        showControls={true}
+        allowDownload={true}
       />
 
       <StoryModal
@@ -316,6 +395,7 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
         }
         onPrevious={selectedStoryIndex > 0 ? goToPreviousStory : null}
       />
+
       <div className="story-list-header">
         <div className="header-content">
           <h1>
@@ -334,6 +414,27 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
         >
           <Sparkles size={16} />
           Create New Story
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="story-tabs">
+        <button
+          onClick={() => setActiveTab("all")}
+          className={`story-tab ${activeTab === "all" ? "active" : ""}`}
+        >
+          <Book size={16} />
+          All Stories ({stories.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("favorites")}
+          className={`story-tab ${
+            activeTab === "favorites" ? "active favorites" : ""
+          }`}
+        >
+          <Heart size={16} />
+          Favorites ({favoriteStoriesCount})
         </button>
       </div>
 
@@ -362,6 +463,7 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="title">Title A-Z</option>
+              <option value="favorites">Favorites First</option>
             </select>
           </div>
 
@@ -426,7 +528,13 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
 
       {filteredAndSortedStories.length === 0 ? (
         <div className="empty-state">
-          {stories.length === 0 ? (
+          {activeTab === "favorites" ? (
+            <>
+              <Heart className="empty-icon" />
+              <h3>No favorite stories yet</h3>
+              <p>Save stories you love by clicking the heart icon!</p>
+            </>
+          ) : stories.length === 0 ? (
             <>
               <Book className="empty-icon" />
               <h3>No stories yet</h3>
@@ -454,15 +562,15 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
         <>
           <div className="stories-grid">
             {paginatedStories.map((story) => (
-              <div key={story.id} className="story-card">
+              <div key={story.storyId} className="story-card">
                 <div className="story-card-image">
                   {story.imageUrl ? (
                     <img
                       src={story.imageUrl}
                       alt={story.title || "Story illustration"}
                       className="story-thumbnail"
-                      loading="lazy" // Browser lazy loading
-                      decoding="async" // Async image decoding
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className="story-placeholder">
@@ -492,31 +600,29 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        saveStory(story.id);
+                        toggleFavoriteStory(story.storyId);
                       }}
                       className={`story-action-btn ${
-                        story.isSaved ? "saved" : "save"
+                        story.isFavorite ? "saved" : "save"
                       }`}
-                      title={story.isSaved ? "Saved" : "Save Story"}
-                      disabled={saving === story.id}
+                      title={
+                        story.isFavorite
+                          ? "Remove from Favorites"
+                          : "Add to Favorites"
+                      }
+                      disabled={saving === story.storyId}
                     >
-                      <Save size={14} />
+                      <Heart size={14} />
                     </button>
 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this story?"
-                          )
-                        ) {
-                          deleteStory(story.id);
-                        }
+                        showDeleteConfirmation(story);
                       }}
                       className="story-action-btn danger"
                       title="Delete Story"
-                      disabled={deleting === story.id}
+                      disabled={deleting === story.storyId}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -564,10 +670,10 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
                     </div>
 
                     <div className="story-features">
-                      {story.isSaved && (
+                      {story.isFavorite && (
                         <span className="feature-badge saved">
-                          <Save size={10} />
-                          Saved
+                          <Heart size={10} />
+                          Favorite
                         </span>
                       )}
                       {story.audioUrl && (
@@ -601,6 +707,20 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
                 Previous
               </button>
 
+              <div className="pagination-info">
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <span className="pagination-details">
+                  Showing {startIndex + 1}-
+                  {Math.min(
+                    startIndex + storiesPerPage,
+                    filteredAndSortedStories.length
+                  )}{" "}
+                  of {filteredAndSortedStories.length}
+                </span>
+              </div>
+
               <button
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
@@ -615,19 +735,7 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
           )}
         </>
       )}
-      <div className="pagination-info">
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <span className="pagination-details">
-          Showing {startIndex + 1}-
-          {Math.min(
-            startIndex + storiesPerPage,
-            filteredAndSortedStories.length
-          )}{" "}
-          of {filteredAndSortedStories.length}
-        </span>
-      </div>
+
       {filteredAndSortedStories.length > 0 && (
         <div className="story-list-summary">
           <p>
@@ -635,6 +743,7 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
             stories
             {searchTerm && ` matching "${searchTerm}"`}
             {hasActiveFilters && ` with current filters`}
+            {activeTab === "favorites" && ` in favorites`}
           </p>
         </div>
       )}
@@ -643,20 +752,3 @@ const [showFullImageStory, setShowFullImageStory] = useState(null);
 };
 
 export default MyStory;
-
-/** @ai-generated 
-Basic structure of the component was AI generated
-Tool: Claude (Anthropic)
-Link: https://claude.ai/chat/3ec44bc7-3ce2-4e0f-9600-f909671b1292
-Prompt: "Create a React component for displaying a list of user stories 
-with search, filter, and sort functionality. 
-The component should include a header with the number of stories, 
-a search bar, and options to filter by character, theme, and setting. 
-Each story card should display the title, metadata (character, theme, setting),
-creation date, and an image if available. Include buttons for reading the story,
-playing audio if available, and deleting the story. Ensure the UI is clean and user-friendly."
-/*
-Modified by:  Hongjie Zhang
-Modifications: Fix nav link, add margin to the header, add loading state,
-add empty state when no stories are available,
-Verified:  Reviewed, partially edited*/

@@ -31,7 +31,7 @@ router.get('/', getUserStories);
 router.get('/:id', getStory);
 
 // Save story to favorites
-router.post('/:id/save', saveStory);
+router.put('/:id/save', saveStory);
 
 // Delete story
 router.delete('/:id', deleteStory);

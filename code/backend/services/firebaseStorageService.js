@@ -76,6 +76,22 @@ const saveAudioFile = async (audioBuffer, storyId, options = {}) => {
 };
 
 /**
+ * Delete audio file from Firebase Storage
+ * @param {string} audioUrl - The audio file URL
+ * @returns {Promise<void>}
+ */
+const deleteAudioFile = async (audioUrl) => {
+  try {
+    const storageRef = ref(storage, audioUrl);
+    await deleteObject(storageRef);
+    console.log(`Audio file deleted successfully: ${audioUrl}`);
+  } catch (error) {
+    console.error('Error deleting audio from Firebase Storage:', error.message);
+    // throw new Error(`Audio deletion failed: ${error.message}`);
+  }
+}
+
+/**
  * Save image file to Firebase Storage (from URL)
  * @param {string} imageUrl - The source image URL (from OpenAI DALL-E)
  * @param {string} storyId - The story ID for organization
@@ -165,6 +181,24 @@ const saveImageFile = async (imageUrl, storyId, options = {}) => {
     }
   }
 };
+
+/**
+ *  Delete image from firebase storage
+ * @param {string} imageUrl - The image Url
+ * @returns {Promise<void>}
+ */
+const deleteImageFile = async (imageUrl) => {
+  try {
+    const storageRef = ref(storage, imageUrl);
+    await deleteObject(storageRef);
+    console.log(`Image file deleted successfully: ${imageUrl}`);
+  } catch (error) {
+    console.error('Error deleting image from Firebase Storage:', error.message);
+    // throw new Error(`Image deletion failed: ${error.message}`);
+  }
+};
+
+
 
 
 /**
@@ -260,7 +294,9 @@ const formatFileSize = (bytes) => {
       
 module.exports = {
   saveAudioFile,
+  deleteAudioFile,
   saveImageFile,
+  deleteImageFile,
   listStoryFiles,
   formatFileSize,
   storage,
