@@ -137,7 +137,7 @@ const Navbar = () => {
                 <li>
                   <Link
                     to="/signup"
-                    className="navbar-cta"
+                    className="navbar-cta navbar-cta-signup"
                     onClick={closeMobileMenu}
                   >
                     REGISTER
