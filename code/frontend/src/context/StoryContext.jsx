@@ -12,6 +12,13 @@ export const StoryReducer = (state, action) => {
         loading: false,
         error: null,
       };
+    case "RESET_GENERATE_STORY":
+      return {
+        ...state,
+        generatedStory: null,
+        loading: false,
+        error: null,
+      };
     case "GET_STORY":
       return {
         ...state,

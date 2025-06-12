@@ -15,7 +15,7 @@ import About from "./pages/About/About";
 import Contact from "./pages/Contact/Contact";
 import SignIn from "./pages/Auth/SignIn/SignIn";
 import SignUp from "./pages/Auth/SighUp/SignUp";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import Settings from "./pages/Settings/Settings";
 import MyStory from "./pages/MyStory/MyStory";
 import GenerateStory from "./pages/GenerateStory/GenerateStory";
 import Navbar from "./components/Navbar/Navbar";
@@ -43,19 +43,19 @@ function AppContent() {
             element={user ? <MyStory /> : <Navigate to="/login" />}
           />
           <Route
-            path="/dashboard"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            path="/settings"
+            element={user ? <Settings /> : <Navigate to="/login" />}
           />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route
             path="/login"
-            element={!user ? <SignIn /> : <Navigate to="/dashboard" />}
+            element={!user ? <SignIn /> : <Navigate to="/mystory" />}
           />
     
           <Route
             path="/signup"
-            element={!user ? <SignUp /> : <Navigate to="/dashboard" />}
+            element={!user ? <SignUp /> : <Navigate to="/mystory" />}
           />
         </Routes>
       </div>
