@@ -8,7 +8,6 @@ export const StoryReducer = (state, action) => {
       return {
         ...state,
         generatedStory: action.payload,
-        allStories: [action.payload, ...state.stories],
         loading: false,
         error: null,
       };

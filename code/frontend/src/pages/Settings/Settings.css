@@ -167,6 +167,11 @@
   border-color: transparent;
 }
 
+.preview-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none; 
+}
 /* Image Button Group */
 
 .image-button-group {
@@ -310,4 +315,21 @@
   .checkbox-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+.fade-text {
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-text.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-text.fade-out {
+  opacity: 0;
+  transform: translateY(-10px);
 }

@@ -1,5 +1,5 @@
 const OpenAI = require("openai");
-const ParentalControls = require('../models/ParentalControlsModel');
+const parentalControls = require('../models/ParentalControlsModel');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,27 +14,17 @@ const generateStoryWithOpenAI = async ({
   ageGroup = "3-5",
 }) => {
   try {
-
+console.log(userId);
     // Fetch parental controls for the user
-    const parentalControls = await ParentalControls.findOne({ userId });
+    const controls = await parentalControls.findOne({ userId });
     
-    // If no parental controls found, use default safe settings
-    const safeControls = parentalControls || {
-      storyConfig: {
-        wordCount: 300,
-        allowedThemes: ['Friendship', 'Adventure', 'Kindness', 'Animals', 'Magic', 'Helping Others', 'Bravery', 'Imagination', 'Bedtime', 'Learning', 'Sharing', 'Curiosity', 'Nature', 'Superheroes', 'Creativity'],
-        blockedTopics: []
-      },
-      restrictedWords: [],
-      contentFiltering: true
-    };
-
+    console.log(controls);
     // Get word count from parental controls
-    const wordCount = safeControls.storyConfig.wordCount || 300;
+    const wordCount = controls.storyConfig.wordCount;
 
     // Build content filtering instructions
-    const contentFilteringPrompt = safeControls.contentFiltering
-      ? `IMPORTANT: This story must be completely safe for children. Avoid any content related to: ${safeControls.storyConfig.blockedTopics.join(
+    const contentFilteringPrompt = controls.storyConfig.blockedTopics
+      ? `IMPORTANT: This story must be completely safe for children. Avoid any content related to: ${controls.storyConfig.blockedTopics.join(
           ", "
         )}. ` +
         `Keep the story positive, gentle, and appropriate for the specified age group.`
@@ -55,9 +45,9 @@ const generateStoryWithOpenAI = async ({
 - Theme/lesson: ${theme}
 
 CONTENT GUIDELINES:
-- Word count: approximately ${wordRange} words
-- Only include themes from this approved list: ${safeControls.storyConfig.allowedThemes.join(', ')}
-- Completely avoid these topics: ${safeControls.storyConfig.blockedTopics.join(', ')}
+- Word count: approximately ${wordCount} words
+- Only include themes from this approved list: ${controls.storyConfig.allowedThemes.join(', ')}
+- Completely avoid these topics: ${controls.storyConfig.blockedTopics.join(', ')}
 
 Please respond in this exact JSON format:
 {
@@ -86,16 +76,20 @@ Make it approximately ${wordCount} words, with simple language and a peaceful en
 };
 
 // Generate an image using OpenAI's DALL-E model with the imageDescription
-const generateImageWithOpenAI = async (imageDescription) => {
+const generateImageWithOpenAI = async (imageDescription,userId) => {
   try {
     // Add emphasis on no text to the existing image description
     const enhancedPrompt = `${imageDescription} Pure visual illustration only - no text, no words, no letters, no titles, no captions, no speech bubbles, no written elements of any kind.`;
+    const controls = await parentalControls.findOne({ userId });
 
+    const newModel = controls.imageConfig.model === 'gpt-image-1' ? 'dall-e-3' : 'dall-e-2';
+    // const newQuality = controls.imageConfig.model === 'gpt-image-1' ? 'auto' : 'standard';
+    const newQuality = newModel === 'gpt-image-1' ? 'auto' : 'standard';
     const result = await openai.images.generate({
-      model: "dall-e-3",
+      model: newModel,
       prompt: enhancedPrompt,
       size: "1024x1024",
-      quality: "standard",
+      quality: newQuality,
       n: 1,
     });
 

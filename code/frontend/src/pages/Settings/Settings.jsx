@@ -1,82 +1,213 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+
 import "./Settings.css";
 import Dalle2Img from "../../assets/dalle2.png";
 import Dalle3Img from "../../assets/dalle3.png";
 import GPTImg1 from "../../assets/gptimg1.png";
+import { useGenSampleAudio } from "../../hooks/Settings/useGenSampleAudio";
+import { useGetSettingEnums } from "../../hooks/Settings/useGetSettingEnums";
+import { useGetSetting } from "../../hooks/Settings/useGetSetting";
+import {LoadingSpinner,} from "../../components/LoadingError/LoadingError";
+import { useUpdateSetting } from "../../hooks/Settings/useUpdateSetting";
 
 const Settings = () => {
-  const voices = [
-    "alloy",
-    "ash",
-    "ballad",
-    "coral",
-    "echo",
-    "fable",
-    "nova",
-    "onyx",
-    "sage",
-    "shimmer",
-  ];
-  const ttsModels = ["tts-1", "tts-1-hd", "gpt-4o-mini-tts"];
   const imageModels = [
     { name: "dall-e-2", img: Dalle2Img },
     { name: "dall-e-3", img: Dalle3Img },
     { name: "gpt-image-1", img: GPTImg1 },
   ];
 
-  const themes = [
-    "Friendship",
-    "Adventure",
-    "Kindness",
-    "Animals",
-    "Magic",
-    "Helping Others",
-    "Bravery",
-    "Imagination",
-    "Bedtime",
-    "Learning",
-    "Sharing",
-    "Curiosity",
-    "Nature",
-    "Superheroes",
-    "Creativity",
-  ];
-  const blockableTopics = [
-    "Violence",
-    "Scary Elements",
-    "Dark Magic",
-    "Bullying",
-    "Sad Endings",
-    "Loneliness",
-    "Dangerous Adventures",
-    "Inappropriate Humor",
-    "Loss / Death",
-    "Nightmares",
-    "Strong Emotions",
-    "Complex Relationships",
-    "Conflict",
-    "Stereotypes",
-    "Fear of Monsters",
-  ];
+  const { GenerateSampleAudio, isPreviewLoading, PreviewError } =
+    useGenSampleAudio();
+  const { enums, isEnumsLoading } = useGetSettingEnums();
+  const { setting, isGetSettingLoading } = useGetSetting();
+  const { updateSetting, isUpdateSettingLoading } = useUpdateSetting();
 
-  const [selectedVoice, setSelectedVoice] = useState("alloy");
-  const [selectedTTSModel, setSelectedTTSModel] = useState("tts-1");
-  const [selectedImageModel, setSelectedImageModel] = useState("dall-e-2");
+  // Initialize state
+  const [selectedVoice, setSelectedVoice] = useState("");
+  const [selectedTTSModel, setSelectedTTSModel] = useState("");
+  const [selectedImageModel, setSelectedImageModel] = useState("");
   const [wordCount, setWordCount] = useState(300);
   const [selectedThemes, setSelectedThemes] = useState([]);
   const [blockedTopics, setBlockedTopics] = useState([]);
+  const [isSaveSpeechLoading, setIsSpeechSaveLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  const handlePreview = () => {
-    console.log({
-      voice: selectedVoice,
-      ttsModel: selectedTTSModel,
-    });
+  const audioRef = useRef(null);
+
+  // Update state when setting data is loaded
+  useEffect(() => {
+    if (setting) {
+      // Handle nested structure safely
+      if (setting.ttsConfig) {
+        setSelectedVoice(setting.ttsConfig.voice || "");
+        setSelectedTTSModel(setting.ttsConfig.model || "");
+      } else if (setting.response?.ttsConfig) {
+        setSelectedVoice(setting.response.ttsConfig.voice || "");
+        setSelectedTTSModel(setting.response.ttsConfig.model || "");
+      }
+
+      if (setting.imageConfig) {
+        setSelectedImageModel(setting.imageConfig.model || "");
+      } else if (setting.response?.imageConfig) {
+        setSelectedImageModel(setting.response.imageConfig.model || "");
+      }
+
+      if (setting.storyConfig) {
+        setWordCount(setting.storyConfig.wordCount || 150);
+        setSelectedThemes(setting.storyConfig.allowedThemes || []);
+        setBlockedTopics(setting.storyConfig.blockedTopics || []);
+      } else if (setting.response?.storyConfig) {
+        setWordCount(setting.response.storyConfig.wordCount || 150);
+        setSelectedThemes(setting.response.storyConfig.allowedThemes || []);
+        setBlockedTopics(setting.response.storyConfig.blockedTopics || []);
+      }
+    }
+  }, [setting]);
+
+  const handlePreview = async () => {
+    // Stop current audio if playing
+    if (audioRef.current && isPlaying) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsPlaying(true);
+
+    try {
+      const audioData = await GenerateSampleAudio(
+        selectedVoice,
+        selectedTTSModel
+      );
+      const audioUrl = audioData?.audioUrl || audioData?.url;
+
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => setIsPlaying(false);
+
+        await audio.play();
+      } else {
+        setIsPlaying(false);
+      }
+
+      if (PreviewError === "Failed to generate audio") {
+        toast.error(
+          "TTS (Text-to-Speech) model doesn't support the selected voice",
+          {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          }
+        );
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error("Preview error:", error);
+      setIsPlaying(false);
+    }
   };
 
-  const handleImageSave = () => {
+  const handleSpeechSave = async () => {
+    setIsSpeechSaveLoading(true);
+
+    try {
+      // Add your save logic here
+      console.log("Saving speech settings...", {
+        voice: selectedVoice,
+        model: selectedTTSModel,
+      });
+
+      const newSetting = {
+        ttsConfig: {
+          voice: selectedVoice,
+          model: selectedTTSModel,
+        },
+      };
+      await updateSetting(newSetting);
+      if (!isUpdateSettingLoading) {
+        toast.success(
+          "Settings saved! Your new voice configuration is now active.",
+          {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+    } finally {
+      setIsSpeechSaveLoading(false);
+    }
+  };
+
+  const handleImageSave = async () => {
     console.log({
       imageModel: selectedImageModel,
     });
+    const newSetting = {
+      imageConfig: {
+        model: selectedImageModel,
+      },
+    };
+
+    await updateSetting(newSetting);
+    if (!isUpdateSettingLoading) {
+      toast.success(
+        "Settings saved! Your new image model settings is now active.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+    }
+  };
+
+  const handleStorySave = async () => {
+    console.log({
+      wordCount,
+      selectedThemes,
+      blockedTopics,
+    });
+
+    const newSetting = {
+      storyConfig: {
+        wordCount: wordCount,
+        allowedThemes: selectedThemes,
+        blockedTopics: blockedTopics,
+      },
+    };
+
+    await updateSetting(newSetting);
+    if (!isUpdateSettingLoading) {
+      toast.success("Settings saved! Your new story settings is now active.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   };
 
   const toggleTheme = (theme) => {
@@ -91,16 +222,33 @@ const Settings = () => {
     );
   };
 
-  const selectAllThemes = () => setSelectedThemes([...themes]);
+  const selectAllThemes = () => {
+    if (enums?.storyConfig?.allowedThemes) {
+      setSelectedThemes([...enums.storyConfig.allowedThemes]);
+    }
+  };
+
   const deselectAllThemes = () => setSelectedThemes([]);
 
-  const selectAllBlocked = () => setBlockedTopics([...blockableTopics]);
+  const selectAllBlocked = () => {
+    if (enums?.storyConfig?.blockedTopics) {
+      setBlockedTopics([...enums.storyConfig.blockedTopics]);
+    }
+  };
+
   const deselectAllBlocked = () => setBlockedTopics([]);
+
+  // Show loading state
+  if (isEnumsLoading || isGetSettingLoading) {
+    return <LoadingSpinner message="Loading Settings" />;
+  }
 
   return (
     <section className="DashboardPage">
+      <ToastContainer autoClose={true} />
       {/* Text-to-Speech Configuration */}
       <div className="dashboard-container">
+        
         <h3>Text-to-Speech Configuration</h3>
 
         <div className="tts-section">
@@ -111,7 +259,8 @@ const Settings = () => {
               value={selectedVoice}
               onChange={(e) => setSelectedVoice(e.target.value)}
             >
-              {voices.map((voice) => (
+              <option value="">Select a voice...</option>
+              {enums?.ttsConfig?.voices?.map((voice) => (
                 <option key={voice} value={voice}>
                   {voice}
                 </option>
@@ -122,7 +271,7 @@ const Settings = () => {
           <div className="tts-group">
             <label>Model Selection:</label>
             <div className="tts-button-group">
-              {ttsModels.map((model) => (
+              {enums?.ttsConfig?.models?.map((model) => (
                 <button
                   key={model}
                   className={`model-btn ${
@@ -138,11 +287,20 @@ const Settings = () => {
           </div>
 
           <div className="save-button-group">
-            <button className="preview-btn" onClick={handlePreview}>
-              Preview Voice
+            <button
+              className="preview-btn"
+              onClick={handlePreview}
+              disabled={!selectedVoice || !selectedTTSModel || isPreviewLoading}
+            >
+              {isPreviewLoading ? "Loading..." : "Preview Voice"}
             </button>
-            <button className="save-btn" onClick={handlePreview}>
-              Save
+
+            <button
+              className="save-btn"
+              onClick={handleSpeechSave}
+              disabled={isSaveSpeechLoading}
+            >
+              {isSaveSpeechLoading ? <>Saving...</> : "Save"}
             </button>
           </div>
         </div>
@@ -173,6 +331,7 @@ const Settings = () => {
           <button
             className="save-btn save-btn-single"
             onClick={handleImageSave}
+            disabled={!selectedImageModel}
           >
             Save
           </button>
@@ -209,7 +368,7 @@ const Settings = () => {
               </button>
             </div>
             <div className="checkbox-grid">
-              {themes.map((theme) => (
+              {enums?.storyConfig?.allowedThemes?.map((theme) => (
                 <label key={theme}>
                   <input
                     type="checkbox"
@@ -234,7 +393,7 @@ const Settings = () => {
               </button>
             </div>
             <div className="checkbox-grid">
-              {blockableTopics.map((topic) => (
+              {enums?.storyConfig?.blockedTopics?.map((topic) => (
                 <label key={topic}>
                   <input
                     type="checkbox"
@@ -249,13 +408,7 @@ const Settings = () => {
 
           <button
             className="save-btn save-btn-single"
-            onClick={() => {
-              console.log({
-                wordCount,
-                selectedThemes,
-                blockedTopics,
-              });
-            }}
+            onClick={handleStorySave}
           >
             Save
           </button>

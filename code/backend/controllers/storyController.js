@@ -1,4 +1,5 @@
 const Story = require("../models/StoryModel");
+const parentalControls = require("../models/ParentalControlsModel");
 const GenerationRequest = require("../models/GenerationRequestModel");
 const {
   generateStoryWithOpenAI,
@@ -10,7 +11,7 @@ const {
   deleteImageFile,
   saveAudioFile,
   deleteAudioFile,
-  checkAudioFileExists
+  checkAudioFileExists,
 } = require("../services/firebaseStorageService");
 
 const generateStory = async (req, res) => {
@@ -56,6 +57,7 @@ const generateStory = async (req, res) => {
         setting,
         theme,
         ageGroup,
+        userId,
       });
 
       // Debug logging
@@ -229,13 +231,13 @@ const generateStory = async (req, res) => {
 const generateImage = async (req, res) => {
   const startTime = Date.now();
   const { imageDescription, storyId } = req.body;
-
+  const userId = req.user._id;
   console.log(imageDescription, storyId);
   try {
     console.log("Generating image for story:", storyId, imageDescription);
 
     // Generate image
-    const imageResult = await generateImageWithOpenAI(imageDescription);
+    const imageResult = await generateImageWithOpenAI(imageDescription, userId);
 
     if (!imageResult || !imageResult.imageUrl) {
       return res.status(500).json({
@@ -294,14 +296,17 @@ const generateAudio = async (req, res) => {
   const startTime = Date.now();
   const { text, storyId } = req.body;
 
+  const userId = req.user._id;
+
   try {
     console.log("Generating audio for story:", storyId, text);
+    const controls = await parentalControls.findOne({ userId });
 
     // Generate audio
     const audioResult = await generateAudioWithOpenAI({
       text: text,
-      voice: "nova",
-      model: "tts-1",
+      voice: controls.ttsConfig.voice,
+      model: controls.ttsConfig.model,
       responseFormat: "mp3",
       speed: 0.8,
     });
@@ -462,7 +467,7 @@ const saveStory = async (req, res) => {
     // Update the story's favorite status
     const story = await Story.findOneAndUpdate(
       { _id: id, userId },
-      { isFavorite: isFavorite },
+      { isFavorite: isFavorite }
     );
 
     if (!story) {
@@ -563,17 +568,18 @@ const deleteStory = async (req, res) => {
 
 const generateAudioSample = async (req, res) => {
   try {
-    const prompt  = "Tell me my magical bedtime adventure where I discover a secret door under my pillow that leads to a land of gentle, sleepy creatures."
+    const prompt =
+      "Tell me my magical bedtime adventure where I discover a secret door under my pillow that leads to a land of gentle, sleepy creatures.";
     const { try_voice, try_model } = req.body;
-    const fileName = try_voice + "_" + try_model
+    const fileName = try_voice + "_" + try_model;
 
     const sampleUrl = await checkAudioFileExists(fileName);
 
-    if(sampleUrl) {
+    if (sampleUrl) {
       return res.json({
         audioUrl: sampleUrl,
         voice: try_voice,
-        model: try_model
+        model: try_model,
       });
     }
 
@@ -600,10 +606,8 @@ const generateAudioSample = async (req, res) => {
     res.json({
       audioUrl: audioDownloadUrl,
       voice: try_voice,
-      model: try_model
+      model: try_model,
     });
-
-   
   } catch (error) {
     console.error("Error generating audio:", error);
     res.status(500).json({
@@ -611,7 +615,7 @@ const generateAudioSample = async (req, res) => {
       error: "Failed to generate audio",
     });
   }
-}
+};
 module.exports = {
   generateStory,
   generateAudio,
