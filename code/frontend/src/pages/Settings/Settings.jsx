@@ -80,7 +80,7 @@ const Settings = () => {
         selectedTTSModel
       );
       const audioUrl = audioData?.audioUrl || audioData?.url;
-
+      console.log("Audio URL:", audioData);
       if (audioUrl) {
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
@@ -93,7 +93,7 @@ const Settings = () => {
         setIsPlaying(false);
       }
 
-      if (PreviewError === "Failed to generate audio") {
+      if (!audioData) {
         toast.error(
           "TTS (Text-to-Speech) model doesn't support the selected voice",
           {
