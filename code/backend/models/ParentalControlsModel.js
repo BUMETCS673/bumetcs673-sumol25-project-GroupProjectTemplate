@@ -8,7 +8,6 @@ const ParentalControlsSchema = new Schema({
     required: true
   },
   
- 
   // Text-to-Speech Configuration
   ttsConfig: {
     voice: {
@@ -25,10 +24,6 @@ const ParentalControlsSchema = new Schema({
   
   // Image Generation Controls
   imageConfig: {
-    enabled: {
-      type: Boolean,
-      default: true
-    },
     model: {
       type: String,
       enum: ['dall-e-2', 'dall-e-3', 'gpt-image-1'],
