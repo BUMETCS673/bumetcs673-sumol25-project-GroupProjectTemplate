@@ -116,7 +116,7 @@ const GenerateStory = () => {
   console.log(setting);
   // Show loading state
     if (!setting ) {
-      return <LoadingSpinner message="Loading Settings" />;
+      return <LoadingSpinner message="Loading Story Generator" />;
     }
 
   return (
