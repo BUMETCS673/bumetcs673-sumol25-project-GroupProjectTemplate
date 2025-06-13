@@ -1,5 +1,5 @@
 const OpenAI = require("openai");
-const parentalControls = require('../models/ParentalControlsModel');
+const parentalControls = require("../models/ParentalControlsModel");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,10 +14,10 @@ const generateStoryWithOpenAI = async ({
   ageGroup = "3-5",
 }) => {
   try {
-console.log(userId);
+    console.log(userId);
     // Fetch parental controls for the user
     const controls = await parentalControls.findOne({ userId });
-    
+
     console.log(controls);
     // Get word count from parental controls
     const wordCount = controls.storyConfig.wordCount;
@@ -46,8 +46,12 @@ console.log(userId);
 
 CONTENT GUIDELINES:
 - Word count: approximately ${wordCount} words
-- Only include themes from this approved list: ${controls.storyConfig.allowedThemes.join(', ')}
-- Completely avoid these topics: ${controls.storyConfig.blockedTopics.join(', ')}
+- Only include themes from this approved list: ${controls.storyConfig.allowedThemes.join(
+            ", "
+          )}
+- Completely avoid these topics: ${controls.storyConfig.blockedTopics.join(
+            ", "
+          )}
 
 Please respond in this exact JSON format:
 {
@@ -76,20 +80,34 @@ Make it approximately ${wordCount} words, with simple language and a peaceful en
 };
 
 // Generate an image using OpenAI's DALL-E model with the imageDescription
-const generateImageWithOpenAI = async (imageDescription,userId) => {
+const generateImageWithOpenAI = async (imageDescription, userId) => {
   try {
     // Add emphasis on no text to the existing image description
     const enhancedPrompt = `${imageDescription} Pure visual illustration only - no text, no words, no letters, no titles, no captions, no speech bubbles, no written elements of any kind.`;
     const controls = await parentalControls.findOne({ userId });
 
-    const newModel = controls.imageConfig.model === 'gpt-image-1' ? 'dall-e-3' : 'dall-e-2';
+    const newModel =
+      controls.imageConfig.model === "gpt-image-1"
+        ? "dall-e-3"
+        : controls.imageConfig.model;
+        
     // const newQuality = controls.imageConfig.model === 'gpt-image-1' ? 'auto' : 'standard';
-    const newQuality = newModel === 'gpt-image-1' ? 'auto' : 'standard';
+    // const newQuality = newModel === 'gpt-image-1' ? 'auto' : 'standard';
+
+    if (newModel === "dall-e-3") {
+      const result = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: enhancedPrompt,
+        size: "1024x1024",
+        quality: "standard",
+        n: 1,
+      });
+    }
+
     const result = await openai.images.generate({
-      model: newModel,
+      model: "dall-e-2",
       prompt: enhancedPrompt,
       size: "1024x1024",
-      quality: newQuality,
       n: 1,
     });
 
